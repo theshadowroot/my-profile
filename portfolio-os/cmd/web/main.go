@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 
 	"portfolio-os/internal/handlers"
 	"portfolio-os/internal/middleware"
@@ -15,9 +16,13 @@ import (
 )
 
 func main() {
-
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using system environment variables")
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
 	}
 
 	// 1. Static Assets & File Servers
