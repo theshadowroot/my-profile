@@ -21,3 +21,4 @@ uploads/
 
 # Persistent application storage
 storage/
+.env
