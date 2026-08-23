@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 
 	"portfolio-os/internal/handlers"
 	"portfolio-os/internal/middleware"
@@ -15,6 +16,12 @@ import (
 )
 
 func main() {
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "7000"
+	}
+	
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("failed to load .env")
 	}
@@ -113,13 +120,8 @@ func main() {
 	mux.Handle("POST /admin/resume", middleware.AdminAuth(http.HandlerFunc(adminHandler.UploadResume)))
 	mux.Handle("GET /resume", http.HandlerFunc(adminHandler.DownloadResume))
 
-	server := &http.Server{
-		Addr:    ":7000",
-		Handler: mux,
-	}
-
-	log.Println("Server running on http://localhost:7000")
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
+	log.Printf("Server starting on port %s...", port)
+	if err := http.ListenAndServe("0.0.0.0:"+port, nil); err != nil {
+		log.Fatalf("Server failed to start: %v", err)
 	}
 }
