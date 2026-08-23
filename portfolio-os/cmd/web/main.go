@@ -120,7 +120,7 @@ func main() {
 	mux.Handle("GET /resume", http.HandlerFunc(adminHandler.DownloadResume))
 
 	log.Printf("Server starting on port %s...", port)
-	if err := http.ListenAndServe("0.0.0.0:"+port, nil); err != nil {
+	if err := http.ListenAndServe("0.0.0.0:"+port, mux); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }
