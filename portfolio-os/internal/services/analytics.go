@@ -1,13 +1,18 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"os"
 	"sort"
 	"sync"
 	"time"
 
 	"portfolio-os/internal/models"
 )
+
+const analyticsStoragePath = "storage/analytics.json"
 
 type AnalyticsService struct {
 	mu     sync.RWMutex
@@ -23,10 +28,42 @@ type AnalyticsStats struct {
 	RecentVisits        []*models.Visit `json:"recent_visits"`
 }
 
-func NewAnalyticsService() *AnalyticsService {
-	return &AnalyticsService{
+func NewAnalyticsService() (*AnalyticsService, error) {
+	s := &AnalyticsService{
 		visits: make(map[string]*models.Visit),
 	}
+
+	if err := s.loadLocked(); err != nil {
+		return nil, err
+	}
+
+	return s, nil
+}
+
+func (s *AnalyticsService) loadLocked() error {
+	if _, err := os.Stat(analyticsStoragePath); os.IsNotExist(err) {
+		return nil
+	}
+
+	file, err := os.Open(analyticsStoragePath)
+	if err != nil {
+		return fmt.Errorf("open analytics storage: %w", err)
+	}
+	defer file.Close()
+
+	var visits []*models.Visit
+
+	if err := json.NewDecoder(file).Decode(&visits); err != nil {
+		return fmt.Errorf("decode analytics storage: %w", err)
+	}
+
+	for _, visit := range visits {
+		if visit != nil {
+			s.visits[visit.ID] = visit
+		}
+	}
+
+	return nil
 }
 
 func (s *AnalyticsService) StartVisit(visit *models.Visit) {
@@ -34,6 +71,10 @@ func (s *AnalyticsService) StartVisit(visit *models.Visit) {
 	defer s.mu.Unlock()
 
 	s.visits[visit.ID] = visit
+
+	if err := s.saveLocked(); err != nil {
+		log.Printf("analytics: save after start visit: %v", err)
+	}
 }
 
 func (s *AnalyticsService) UpdateDuration(
@@ -50,6 +91,10 @@ func (s *AnalyticsService) UpdateDuration(
 	}
 
 	visit.Duration = duration
+
+	if err := s.saveLocked(); err != nil {
+		log.Printf("analytics: save after duration update: %v", err)
+	}
 
 	return true
 }
@@ -119,6 +164,37 @@ func (s *AnalyticsService) GetStats() *AnalyticsStats {
 	stats.RecentVisits = visits
 
 	return stats
+}
+
+func (s *AnalyticsService) saveLocked() error {
+	if err := os.MkdirAll("storage", 0755); err != nil {
+		return fmt.Errorf("create analytics storage directory: %w", err)
+	}
+
+	visits := make([]*models.Visit, 0, len(s.visits))
+
+	for _, visit := range s.visits {
+		visits = append(visits, visit)
+	}
+
+	sort.Slice(visits, func(i, j int) bool {
+		return visits[i].Timestamp.Before(visits[j].Timestamp)
+	})
+
+	file, err := os.Create(analyticsStoragePath)
+	if err != nil {
+		return fmt.Errorf("create analytics storage: %w", err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "    ")
+
+	if err := encoder.Encode(visits); err != nil {
+		return fmt.Errorf("encode analytics storage: %w", err)
+	}
+
+	return nil
 }
 
 func FormatDuration(duration time.Duration) string {

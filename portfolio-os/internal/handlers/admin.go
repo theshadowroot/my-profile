@@ -477,6 +477,115 @@ func (h *AdminHandler) DeleteSkill(
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
 
+func (h *AdminHandler) AddStatistic(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		http.Error(
+			w,
+			"method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	statistic, ok := parseStatisticForm(w, r)
+	if !ok {
+		return
+	}
+
+	if err := h.PortfolioService.AddStatistic(statistic); err != nil {
+		http.Error(
+			w,
+			"failed to add statistic",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+
+func (h *AdminHandler) UpdateStatistic(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	if r.Method != http.MethodPost {
+		http.Error(
+			w,
+			"method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	indexStr := r.PathValue("index")
+
+	var index int
+
+	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+		http.Error(
+			w,
+			"invalid statistic index",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	statistic, ok := parseStatisticForm(w, r)
+	if !ok {
+		return
+	}
+
+	if err := h.PortfolioService.UpdateStatistic(index, statistic); err != nil {
+		http.Error(
+			w,
+			"failed to update statistic",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+
+func (h *AdminHandler) DeleteStatistic(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	if r.Method != http.MethodPost {
+		http.Error(
+			w,
+			"method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	indexStr := r.PathValue("index")
+
+	var index int
+
+	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+		http.Error(
+			w,
+			"invalid statistic index",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if err := h.PortfolioService.DeleteStatistic(index); err != nil {
+		http.Error(
+			w,
+			"failed to delete statistic",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+
 func (h *AdminHandler) AddService(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
@@ -1133,6 +1242,28 @@ func parseSocialLinkForm(
 		Platform: platform,
 		URL:      url,
 		Username: r.FormValue("username"),
+	}, true
+}
+
+func parseStatisticForm(
+	w http.ResponseWriter,
+	r *http.Request,
+) (models.Statistic, bool) {
+	label := r.FormValue("label")
+	value := r.FormValue("value")
+
+	if label == "" || value == "" {
+		http.Error(
+			w,
+			"statistic label and value are required",
+			http.StatusBadRequest,
+		)
+		return models.Statistic{}, false
+	}
+
+	return models.Statistic{
+		Label: label,
+		Value: value,
 	}, true
 }
 

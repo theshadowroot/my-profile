@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"io/fs"
 	"log"
 	"net/http"
@@ -16,19 +15,19 @@ import (
 )
 
 func main() {
-
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("failed to load .env")
 	}
 
+	// 1. Static Assets & File Servers
 	staticFS, err := fs.Sub(web.Files, "static")
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	staticHandler := http.FileServer(http.FS(staticFS))
 	uploadsHandler := http.FileServer(http.Dir("uploads"))
 
+	// 2. Services & Renderer
 	renderer, err := renderer.New(web.Files)
 	if err != nil {
 		log.Fatal(err)
@@ -39,243 +38,80 @@ func main() {
 		log.Fatal(err)
 	}
 
-	analyticsService := services.NewAnalyticsService()
+	analyticsService, err := services.NewAnalyticsService()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	analyticsHandler := handlers.NewAnalyticsHandler(
-		analyticsService,
-	)
+	// 3. Handlers
+	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService)
+	adminHandler := handlers.NewAdminHandler(renderer, portfolioService)
+	homeHandler := handlers.NewHomeHandler(renderer, portfolioService)
 
-	adminHandler := handlers.NewAdminHandler(
-		renderer,
-		portfolioService,
-	)
-
-	homeHandler := handlers.NewHomeHandler(
-		renderer,
-		portfolioService.GetPortfolio(),
-	)
-
+	// 4. Mux Routes
 	mux := http.NewServeMux()
 
-	mux.Handle(
-		"GET /static/",
-		http.StripPrefix("/static/", staticHandler),
-	)
+	// Static & Upload File Handlers
+	mux.Handle("GET /static/", http.StripPrefix("/static/", staticHandler))
+	mux.Handle("GET /uploads/", http.StripPrefix("/uploads/", uploadsHandler))
 
-	mux.Handle(
-		"GET /uploads/",
-		http.StripPrefix("/uploads/", uploadsHandler),
-	)
+	// Page Views
+	mux.HandleFunc("GET /{$}", homeHandler.HandleHome)
+	mux.HandleFunc("GET /client", homeHandler.HandleClient)
+	mux.HandleFunc("GET /developer", homeHandler.HandleDeveloper)
 
-	mux.HandleFunc("GET /", homeHandler.Handle)
+	// Auth Endpoints
+	mux.HandleFunc("GET /admin/login", adminHandler.Login)
+	mux.HandleFunc("POST /admin/login", adminHandler.Login)
+	mux.HandleFunc("GET /admin/logout", adminHandler.Logout)
 
-	mux.HandleFunc("GET /debug/portfolio", func(w http.ResponseWriter, r *http.Request) {
-		portfolio := portfolioService.GetPortfolio()
+	// Analytics Endpoints
+	mux.HandleFunc("POST /api/visits", analyticsHandler.StartVisit)
+	mux.HandleFunc("PATCH /api/visits/{id}", analyticsHandler.UpdateDuration)
+	mux.Handle("GET /api/admin/analytics", middleware.AdminAuth(http.HandlerFunc(analyticsHandler.GetStats)))
 
-		w.Header().Set("Content-Type", "application/json")
-
-		if err := json.NewEncoder(w).Encode(portfolio); err != nil {
-			http.Error(
-				w,
-				"Failed to encode portfolio",
-				http.StatusInternalServerError,
-			)
+	// Admin CRUD Routes
+	mux.Handle("GET /admin", middleware.AdminAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		if err := renderer.Render(w, "admin", portfolioService.GetPortfolio()); err != nil {
+			http.Error(w, "Failed to render admin page", http.StatusInternalServerError)
 		}
-	})
+	})))
 
-	mux.HandleFunc(
-		"GET /admin/login",
-		adminHandler.Login,
-	)
+	mux.Handle("POST /admin/profile", middleware.AdminAuth(http.HandlerFunc(adminHandler.UpdateProfile)))
 
-	mux.HandleFunc(
-		"POST /admin/login",
-		adminHandler.Login,
-	)
+	mux.Handle("POST /admin/certificates", middleware.AdminAuth(http.HandlerFunc(adminHandler.AddCertificate)))
+	mux.Handle("POST /admin/certificates/{index}", middleware.AdminAuth(http.HandlerFunc(adminHandler.UpdateCertificate)))
+	mux.Handle("POST /admin/certificates/{index}/delete", middleware.AdminAuth(http.HandlerFunc(adminHandler.DeleteCertificate)))
 
-	mux.HandleFunc(
-		"GET /admin/logout",
-		adminHandler.Logout,
-	)
+	mux.Handle("POST /admin/skills", middleware.AdminAuth(http.HandlerFunc(adminHandler.AddSkill)))
+	mux.Handle("POST /admin/skills/{index}", middleware.AdminAuth(http.HandlerFunc(adminHandler.UpdateSkill)))
+	mux.Handle("POST /admin/skills/{index}/delete", middleware.AdminAuth(http.HandlerFunc(adminHandler.DeleteSkill)))
 
-	mux.HandleFunc(
-		"POST /api/visits",
-		analyticsHandler.StartVisit,
-	)
+	mux.Handle("POST /admin/statistics", middleware.AdminAuth(http.HandlerFunc(adminHandler.AddStatistic)))
+	mux.Handle("POST /admin/statistics/{index}", middleware.AdminAuth(http.HandlerFunc(adminHandler.UpdateStatistic)))
+	mux.Handle("POST /admin/statistics/{index}/delete", middleware.AdminAuth(http.HandlerFunc(adminHandler.DeleteStatistic)))
 
-	mux.HandleFunc(
-		"PATCH /api/visits/{id}",
-		analyticsHandler.UpdateDuration,
-	)
+	mux.Handle("POST /admin/services", middleware.AdminAuth(http.HandlerFunc(adminHandler.AddService)))
+	mux.Handle("POST /admin/services/{index}", middleware.AdminAuth(http.HandlerFunc(adminHandler.UpdateService)))
+	mux.Handle("POST /admin/services/{index}/delete", middleware.AdminAuth(http.HandlerFunc(adminHandler.DeleteService)))
 
-	mux.Handle(
-		"GET /api/admin/analytics",
-		middleware.AdminAuth(
-			http.HandlerFunc(analyticsHandler.GetStats),
-		),
-	)
+	mux.Handle("POST /admin/education", middleware.AdminAuth(http.HandlerFunc(adminHandler.AddEducation)))
+	mux.Handle("POST /admin/education/{index}", middleware.AdminAuth(http.HandlerFunc(adminHandler.UpdateEducation)))
+	mux.Handle("POST /admin/education/{index}/delete", middleware.AdminAuth(http.HandlerFunc(adminHandler.DeleteEducation)))
 
-	mux.Handle(
-		"GET /admin",
-		middleware.AdminAuth(
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	mux.Handle("POST /admin/projects", middleware.AdminAuth(http.HandlerFunc(adminHandler.AddProject)))
+	mux.Handle("POST /admin/projects/{index}", middleware.AdminAuth(http.HandlerFunc(adminHandler.UpdateProject)))
+	mux.Handle("POST /admin/projects/{index}/delete", middleware.AdminAuth(http.HandlerFunc(adminHandler.DeleteProject)))
 
-				if err := renderer.Render(
-					w,
-					"admin",
-					portfolioService.GetPortfolio(),
-				); err != nil {
-					http.Error(
-						w,
-						"Failed to render admin page",
-						http.StatusInternalServerError,
-					)
-				}
-			}),
-		),
-	)
+	mux.Handle("POST /admin/contact", middleware.AdminAuth(http.HandlerFunc(adminHandler.UpdateContact)))
 
-	mux.Handle(
-		"POST /admin/profile",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.UpdateProfile),
-		),
-	)
+	mux.Handle("POST /admin/social-links", middleware.AdminAuth(http.HandlerFunc(adminHandler.AddSocialLink)))
+	mux.Handle("POST /admin/social-links/{index}", middleware.AdminAuth(http.HandlerFunc(adminHandler.UpdateSocialLink)))
+	mux.Handle("POST /admin/social-links/{index}/delete", middleware.AdminAuth(http.HandlerFunc(adminHandler.DeleteSocialLink)))
 
-	mux.Handle(
-		"POST /admin/certificates",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.AddCertificate),
-		),
-	)
-	mux.Handle(
-		"POST /admin/certificates/{index}",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.UpdateCertificate),
-		),
-	)
-	mux.Handle(
-		"POST /admin/certificates/{index}/delete",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.DeleteCertificate),
-		),
-	)
-
-	mux.Handle(
-		"POST /admin/skills",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.AddSkill),
-		),
-	)
-	mux.Handle(
-		"POST /admin/skills/{index}",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.UpdateSkill),
-		),
-	)
-	mux.Handle(
-		"POST /admin/skills/{index}/delete",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.DeleteSkill),
-		),
-	)
-
-	mux.Handle(
-		"POST /admin/services",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.AddService),
-		),
-	)
-	mux.Handle(
-		"POST /admin/services/{index}/delete",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.DeleteService),
-		),
-	)
-	mux.Handle(
-		"POST /admin/services/{index}",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.UpdateService),
-		),
-	)
-
-	mux.Handle(
-		"POST /admin/education",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.AddEducation),
-		),
-	)
-	mux.Handle(
-		"POST /admin/education/{index}/delete",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.DeleteEducation),
-		),
-	)
-	mux.Handle(
-		"POST /admin/education/{index}",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.UpdateEducation),
-		),
-	)
-
-	mux.Handle(
-		"POST /admin/projects",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.AddProject),
-		),
-	)
-	mux.Handle(
-		"POST /admin/projects/{index}/delete",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.DeleteProject),
-		),
-	)
-	mux.Handle(
-		"POST /admin/projects/{index}",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.UpdateProject),
-		),
-	)
-
-	mux.Handle(
-		"POST /admin/contact",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.UpdateContact),
-		),
-	)
-
-	mux.Handle(
-		"POST /admin/social-links",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.AddSocialLink),
-		),
-	)
-	mux.Handle(
-		"POST /admin/social-links/{index}/delete",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.DeleteSocialLink),
-		),
-	)
-	mux.Handle(
-		"POST /admin/social-links/{index}",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.UpdateSocialLink),
-		),
-	)
-
-	mux.Handle(
-		"POST /admin/resume",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.UploadResume),
-		),
-	)
-	mux.Handle(
-		"GET /admin/resume/download",
-		middleware.AdminAuth(
-			http.HandlerFunc(adminHandler.DownloadResume),
-		),
-	)
+	mux.Handle("POST /admin/resume", middleware.AdminAuth(http.HandlerFunc(adminHandler.UploadResume)))
+	mux.Handle("GET /resume", http.HandlerFunc(adminHandler.DownloadResume))
 
 	server := &http.Server{
 		Addr:    ":7000",
@@ -283,7 +119,6 @@ func main() {
 	}
 
 	log.Println("Server running on http://localhost:7000")
-
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}

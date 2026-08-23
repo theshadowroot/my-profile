@@ -1,326 +1,182 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const clientView = document.getElementById("client-view");
-    const developerView = document.getElementById("developer-view");
+document.addEventListener('DOMContentLoaded', () => {
+  const tabs = document.querySelectorAll('.tab-item');
+  const fileItems = document.querySelectorAll('.file-item');
+  const activityButtons = document.querySelectorAll('.activity-btn');
+  const panes = document.querySelectorAll('.dynamic-subpanes-wrapper .tab-content');
+  const editorViewport = document.querySelector('.editor-viewport');
+  const divider = document.querySelector('.ide-section-divider');
 
-    const toggleButton = document.getElementById("view-toggle");
-    const devViewToggle = document.getElementById("dev-view-toggle");
-    const viewLabel = document.getElementById("view-label");
-
-    const editorTabs = document.querySelectorAll(".editor-tab");
-    const fileItems = document.querySelectorAll(".file-item");
-    const codePanels = document.querySelectorAll(".code-panel");
-
-    /*
-     * --------------------------------------------------
-     * VIEW TOGGLE
-     * --------------------------------------------------
-     */
-
-    function setView(view) {
-    const isDeveloper = view === "developer";
-
-    const activeView = isDeveloper
-        ? developerView
-        : clientView;
-
-    const inactiveView = isDeveloper
-        ? clientView
-        : developerView;
-
-    inactiveView.classList.remove("view-visible");
-    inactiveView.classList.add("view-hidden");
-
-    setTimeout(() => {
-        inactiveView.hidden = true;
-
-        activeView.hidden = false;
-
-        requestAnimationFrame(() => {
-            activeView.classList.remove("view-hidden");
-            activeView.classList.add("view-visible");
-        });
-    }, 150);
-
-    if (viewLabel) {
-        viewLabel.textContent = isDeveloper
-            ? "Developer View"
-            : "Client View";
-    }
-
-    if (devViewToggle) {
-        devViewToggle.textContent = isDeveloper
-            ? "Client View"
-            : "Developer View";
-    }
-
-    localStorage.setItem("portfolio-view", view);
-}
-
-
-    /*
-     * --------------------------------------------------
-     * CLIENT VIEW TO DEVELOPER VIEW
-     * --------------------------------------------------
-     */
-
-    if (toggleButton) {
-        toggleButton.addEventListener("click", () => {
-            const currentView =
-                localStorage.getItem("portfolio-view") || "client";
-
-            setView(
-                currentView === "client"
-                    ? "developer"
-                    : "client"
-            );
-        });
-    }
-
-
-    /*
-     * --------------------------------------------------
-     * DEVELOPER VIEW TO CLIENT VIEW
-     * --------------------------------------------------
-     */
-
-    if (devViewToggle) {
-        devViewToggle.addEventListener("click", () => {
-            const currentView =
-                localStorage.getItem("portfolio-view") || "client";
-
-            setView(
-                currentView === "client"
-                    ? "developer"
-                    : "client"
-            );
-        });
-    }
-
-
-    /*
-     * --------------------------------------------------
-     * EDITOR TAB SWITCHING
-     * --------------------------------------------------
-     */
-
-    function openTab(tabName) {
-
-        /*
-         * Update editor tabs
-         */
-
-        editorTabs.forEach((tab) => {
-            tab.classList.toggle(
-                "active",
-                tab.dataset.tab === tabName
-            );
-        });
-
-
-        /*
-         * Update explorer files
-         */
-
-        fileItems.forEach((file) => {
-            file.classList.toggle(
-                "active",
-                file.dataset.tab === tabName
-            );
-        });
-
-
-        /*
-         * Update editor panels
-         */
-
-        codePanels.forEach((panel) => {
-            panel.classList.toggle(
-                "active",
-                panel.dataset.panel === tabName
-            );
-        });
-
-
-        /*
-         * Remember currently open file
-         */
-
-        localStorage.setItem(
-            "portfolio-open-file",
-            tabName
-        );
-
-
-        /*
-         * Update status bar
-         */
-
-        updateStatusBar(tabName);
-    }
-
-
-    /*
-     * --------------------------------------------------
-     * TAB CLICK EVENTS
-     * --------------------------------------------------
-     */
-
-    editorTabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-            openTab(tab.dataset.tab);
-        });
+  // Staggered Skill Progress Bar Handler
+  function triggerSkillBars() {
+    const fills = document.querySelectorAll('#pane-skills .meter-fill');
+    fills.forEach((fill) => {
+      fill.style.width = '0%';
     });
 
+    fills.forEach((fill, index) => {
+      const targetWidth = fill.getAttribute('data-fill') || '0';
+      setTimeout(() => {
+        fill.style.width = `${targetWidth}%`;
+      }, index * 120 + 80);
+    });
+  }
 
-    /*
-     * --------------------------------------------------
-     * EXPLORER CLICK EVENTS
-     * --------------------------------------------------
-     */
+  // Glowing Typewriter Effect
+  const activeTypewriterTimeouts = new Map();
 
-    fileItems.forEach((file) => {
-        file.addEventListener("click", () => {
-            openTab(file.dataset.tab);
-        });
+  function startTypewriter(element) {
+    const fullText = element.getAttribute('data-text') || element.textContent;
+    let isDeleting = false;
+    let charIndex = fullText.length;
+
+    if (activeTypewriterTimeouts.has(element)) {
+      clearTimeout(activeTypewriterTimeouts.get(element));
+    }
+
+    function typeLoop() {
+      if (!isDeleting) {
+        element.innerHTML = `${fullText.substring(0, charIndex)}<span class="typewriter-cursor"></span>`;
+        charIndex++;
+
+        if (charIndex > fullText.length) {
+          isDeleting = true;
+          const timeoutId = setTimeout(typeLoop, 2400);
+          activeTypewriterTimeouts.set(element, timeoutId);
+          return;
+        }
+      } else {
+        element.innerHTML = `${fullText.substring(0, charIndex)}<span class="typewriter-cursor"></span>`;
+        charIndex--;
+
+        if (charIndex < 0) {
+          isDeleting = false;
+          charIndex = 0;
+          const timeoutId = setTimeout(typeLoop, 500);
+          activeTypewriterTimeouts.set(element, timeoutId);
+          return;
+        }
+      }
+
+      const speed = isDeleting ? 40 : 85;
+      const timeoutId = setTimeout(typeLoop, speed);
+      activeTypewriterTimeouts.set(element, timeoutId);
+    }
+
+    typeLoop();
+  }
+
+  function playTypewritersInPane(pane) {
+    const glowComments = pane.querySelectorAll('.glow-typewriter');
+    glowComments.forEach((el) => startTypewriter(el));
+  }
+
+  // Main Tab / Viewport Navigation Switcher
+  function switchTab(tabKey) {
+    if (!tabKey) return;
+
+    // 1. Sync Activity Bar icons
+    activityButtons.forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-tab') === tabKey);
     });
 
+    // 2. Sync Editor Top Tabs
+    tabs.forEach((tab) => {
+      tab.classList.toggle('active', tab.getAttribute('data-tab') === tabKey);
+    });
 
-    /*
-     * --------------------------------------------------
-     * STATUS BAR
-     * --------------------------------------------------
-     */
+    // 3. Sync Sidebar File List
+    fileItems.forEach((item) => {
+      item.classList.toggle('active', item.getAttribute('data-tab') === tabKey);
+    });
 
-    function updateStatusBar(tabName) {
-        const statusFile =
-            document.querySelector(".status-file");
-
-        if (!statusFile) {
-            return;
+    // 4. Activate Viewport Pane & Smooth Scroll
+    panes.forEach((pane) => {
+      const isTarget = pane.id === `pane-${tabKey}`;
+      pane.classList.toggle('active', isTarget);
+      if (isTarget) {
+        playTypewritersInPane(pane);
+        if (tabKey === 'skills') {
+          triggerSkillBars();
         }
 
-        const fileNames = {
-            home: "Home.go",
-            about: "AboutMe.go",
-            skills: "Skills.go",
-            services: "Services.go",
-            education: "Education.go",
-            certificates: "Certificates.go",
-            projects: "Projects.go",
-            gallery: "Gallery.go",
-            contact: "Contact.go"
-        };
-
-        statusFile.textContent =
-            fileNames[tabName] || "Go";
-    }
-
-
-    /*
-     * --------------------------------------------------
-     * DYNAMIC LINE NUMBERS
-     * --------------------------------------------------
-     */
-
-    function updateLineNumbers() {
-        const codeEditors =
-            document.querySelectorAll(".code-editor");
-
-        codeEditors.forEach((editor) => {
-            const code =
-                editor.querySelector("code");
-
-            const lineNumbers =
-                editor.querySelector(".line-numbers");
-
-            if (!code || !lineNumbers) {
-                return;
-            }
-
-            const lines =
-                code.innerText.split("\n");
-
-            lineNumbers.innerHTML = "";
-
-            lines.forEach((_, index) => {
-                const line =
-                    document.createElement("span");
-
-                line.textContent = index + 1;
-
-                lineNumbers.appendChild(line);
-            });
-        });
-    }
-
-
-    /*
-     * --------------------------------------------------
-     * INITIAL STATE
-     * --------------------------------------------------
-     */
-
-    const savedView =
-        localStorage.getItem("portfolio-view") || "client";
-
-    setView(savedView);
-
-
-    const savedFile =
-        localStorage.getItem("portfolio-open-file") || "home";
-
-    openTab(savedFile);
-
-
-    updateLineNumbers();
-
-
-
-
-
-    /*
- * --------------------------------------------------
- * MOBILE EXPLORER
- * --------------------------------------------------
- */
-
-const mobileExplorerToggle =
-    document.getElementById("mobile-explorer-toggle");
-
-const devSidebar =
-    document.querySelector(".dev-sidebar");
-
-if (mobileExplorerToggle && devSidebar) {
-
-    mobileExplorerToggle.addEventListener("click", () => {
-
-        const isOpen =
-            devSidebar.classList.toggle("mobile-open");
-
-        mobileExplorerToggle.setAttribute(
-            "aria-expanded",
-            isOpen
-        );
-    });
-
-
-    fileItems.forEach((file) => {
-
-        file.addEventListener("click", () => {
-
-            if (window.innerWidth <= 768) {
-                devSidebar.classList.remove("mobile-open");
-
-                mobileExplorerToggle.setAttribute(
-                    "aria-expanded",
-                    "false"
-                );
-            }
-
+        if (tabKey !== 'home' && divider && editorViewport) {
+          const targetOffset = divider.offsetTop - 12;
+          editorViewport.scrollTo({
+            top: targetOffset,
+            behavior: 'smooth'
           });
+        } else if (tabKey === 'home' && editorViewport) {
+          editorViewport.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }
+      }
+    });
+  }
 
-        });
+  // Click Listeners
+  activityButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tabKey = btn.getAttribute('data-tab');
+      if (tabKey) switchTab(tabKey);
+    });
+  });
 
-    }
-    
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const tabKey = tab.getAttribute('data-tab');
+      if (tabKey) switchTab(tabKey);
+    });
+  });
+
+  fileItems.forEach((item) => {
+    item.addEventListener('click', () => {
+      const tabKey = item.getAttribute('data-tab');
+      if (tabKey) switchTab(tabKey);
+    });
+  });
+
+  // Initialize Pinned Home Header Animations
+  const initialPinned = document.getElementById('pinned-home');
+  if (initialPinned) {
+    playTypewritersInPane(initialPinned);
+  }
+});
+
+// Developer Portrait Lightbox Modal Handlers
+function openDevModal(imageSrc, name, role) {
+  const modal = document.getElementById('dev-portrait-modal');
+  const modalImg = document.getElementById('dev-modal-img');
+  const modalName = document.getElementById('dev-modal-name');
+  const modalRole = document.getElementById('dev-modal-role');
+
+  if (!modal || !modalImg) return;
+
+  modalImg.src = imageSrc;
+  modalName.textContent = name || '';
+  modalRole.textContent = role || '';
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDevModalDirect() {
+  const modal = document.getElementById('dev-portrait-modal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+function closeDevModal(e) {
+  if (e.target.id === 'dev-portrait-modal') {
+    closeDevModalDirect();
+  }
+}
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    closeDevModalDirect();
+  }
 });

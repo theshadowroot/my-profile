@@ -1,0 +1,23 @@
+# Environment
+.env
+
+
+# Go build / development
+tmp/
+*.exe
+*.test
+
+
+# Runtime uploads
+uploads/
+
+
+
+
+# OS / editor files
+.DS_Store
+.vscode/
+.idea/
+
+# Persistent application storage
+storage/

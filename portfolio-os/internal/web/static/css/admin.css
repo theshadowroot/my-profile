@@ -196,6 +196,7 @@
     color: rgb(220, 80, 80) !important;
 }
 
+.existing-statistics,
 .existing-skills,
 .existing-services,
 .existing-education,
@@ -205,6 +206,7 @@
     margin-top: 28px;
 }
 
+.statistic-editor,
 .skill-editor,
 .service-editor,
 .education-editor,
@@ -217,6 +219,7 @@
     margin-bottom: 12px;
 }
 
+.statistic-editor,
 .skill-editor,
 .service-editor,
 .education-editor,

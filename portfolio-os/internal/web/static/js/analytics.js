@@ -12,9 +12,6 @@
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    page: window.location.pathname,
-                }),
             });
 
             if (!response.ok) {
@@ -82,6 +79,7 @@
 
         if (heartbeatTimer) {
             clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
         }
     }
 

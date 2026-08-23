@@ -1,22 +1,76 @@
 {{ define "content" }}
-<link rel="stylesheet" href="/static/css/client.css">
-<link rel="stylesheet" href="/static/css/developer.css">
-<div class="view-controls">
-    <button
-        type="button"
-        id="view-toggle"
-        aria-label="Switch between Client View and Developer View"
-        aria-pressed="false"
-    >
-        <span id="view-label">Developer View</span>
-    </button>
-</div>
 
-{{ template "client-view" . }}
+<link rel="stylesheet" href="/static/css/landing.css">
 
-{{ template "developer-view" . }}
+<main class="hero-stage">
+  <!-- Crimson Backdrop Ambient Sphere -->
+  <div class="crimson-circle-bg"></div>
+  <div class="crimson-small-circle-bg"></div>
 
-<script src="/static/js/view-toggle.js"></script>
-<script src="/static/js/analytics.js"></script>
+  <!-- Top Navigation -->
+  <header class="hero-navbar">
+    <div class="hero-brand">
+      <span class="brand-stripes">
+        <span></span><span></span><span></span>
+      </span>
+      <span class="brand-name">{{ .Portfolio.Profile.Name }}</span>
+    </div>
+
+    <nav class="hero-nav">
+      <a href="/client#about">ABOUT</a>
+      <a href="/client#projects">GALLERY</a>
+      <a href="/client#contact">CONTACTS</a>
+    </nav>
+  </header>
+
+  <!-- Central Showcase Section -->
+  <section class="hero-body">
+    <!-- Left Column: Copy & Actions -->
+    <div class="hero-text-content">
+      <span class="hero-subtitle">SYSTEM ARCHITECTURE & SECURITY</span>
+      <h1 class="hero-heading">DEVELOPER</h1>
+      <p class="hero-description">
+        {{ .Portfolio.Profile.Bio }}
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="/developer" class="cta-circle-btn">
+          <span class="arrow-icon">→</span>
+          <span class="btn-text">Developer View</span>
+        </a>
+
+        <a href="/client" class="cta-client-link">
+          Client View ↗
+        </a>
+      </div>
+    </div>
+
+    <!-- Right Column: Hero Figure & Glowing Aura -->
+    <div class="hero-art-container">
+      <div class="art-glow-orb"></div>
+      <img
+        src="/static/images/profilee.png"
+        alt="{{ .Portfolio.Profile.Name }}"
+        class="hero-sculpture"
+      />
+    </div>
+  </section>
+
+  <!-- Bottom Slider / Version Footer -->
+  <footer class="hero-footer">
+    <div class="footer-tracker">
+      <span class="num active">01</span>
+      <div class="progress-bar">
+        <span class="fill"></span>
+      </div>
+      <span class="num">02</span>
+    </div>
+
+    <div class="footer-status">
+      <span class="status-dot"></span>
+      <span>{{ .Portfolio.Profile.Availability }}</span>
+    </div>
+  </footer>
+</main>
 
 {{ end }}

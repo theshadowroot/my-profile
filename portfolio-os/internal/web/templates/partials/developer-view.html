@@ -1,313 +1,380 @@
 {{ define "developer-view" }}
-
-<section id="developer-view" hidden>
-  <div class="dev-window">
-    <!-- Title Bar -->
-    <header class="dev-titlebar">
-      <button
-        type="button"
-        class="mobile-explorer-toggle"
-        id="mobile-explorer-toggle"
-        aria-label="Open file explorer"
-        aria-expanded="false"
-      >
-        ☰
-      </button>
-
-      <div class="traffic-lights">
-        <span class="traffic-light red"></span>
-        <span class="traffic-light yellow"></span>
-        <span class="traffic-light green"></span>
-      </div>
-
-      <div class="dev-title">portfolio-os</div>
-
-      <button
-        type="button"
-        class="dev-view-selector"
-        id="dev-view-toggle"
-        aria-label="Switch between Developer View and Client View"
-        aria-pressed="true"
-      >
-        Client View
-      </button>
-    </header>
-
-    <!-- Main Workspace -->
-    <div class="dev-workspace">
-      <!-- Explorer -->
-      <!-- Explorer -->
-      <aside class="dev-sidebar">
-        <div class="explorer-title">EXPLORER</div>
-
-        <div class="explorer-section">PORTFOLIO-OS</div>
-
-        <nav class="file-tree">
-          <!-- Portfolio folder -->
-          <div class="tree-folder open">
-            <div class="tree-folder-name">
-              <span class="tree-chevron">⌄</span>
-              <span class="folder-icon">▾</span>
-              portfolio
-            </div>
-
-            <div class="tree-children">
-              <!-- Home -->
-              <button class="file-item active" data-tab="home">
-                <span class="file-icon go-icon">Go</span>
-                <span>Home.go</span>
-              </button>
-
-              <!-- About -->
-              <button class="file-item" data-tab="about">
-                <span class="file-icon go-icon">Go</span>
-                <span>AboutMe.go</span>
-              </button>
-
-              <!-- Skills -->
-              <button class="file-item" data-tab="skills">
-                <span class="file-icon go-icon">Go</span>
-                <span>Skills.go</span>
-              </button>
-
-              <!-- Services -->
-              <button class="file-item" data-tab="services">
-                <span class="file-icon go-icon">Go</span>
-                <span>Services.go</span>
-              </button>
-
-              <!-- Education -->
-              <button class="file-item" data-tab="education">
-                <span class="file-icon go-icon">Go</span>
-                <span>Education.go</span>
-              </button>
-
-              <!-- Certificates -->
-              <button class="file-item" data-tab="certificates">
-                <span class="file-icon go-icon">Go</span>
-                <span>Certificates.go</span>
-              </button>
-
-              <!-- Projects -->
-              <button class="file-item" data-tab="projects">
-                <span class="file-icon go-icon">Go</span>
-                <span>Projects.go</span>
-              </button>
-
-              <!-- Gallery -->
-              <button class="file-item" data-tab="gallery">
-                <span class="file-icon go-icon">Go</span>
-                <span>Gallery.go</span>
-              </button>
-
-              <!-- Contact -->
-              <button class="file-item" data-tab="contact">
-                <span class="file-icon go-icon">Go</span>
-                <span>Contact.go</span>
-              </button>
-            </div>
-          </div>
-        </nav>
-      </aside>
-
-      <!-- Editor -->
-      <main class="dev-editor">
-        <!-- Tabs -->
-        <div class="editor-tabs">
-          <button class="editor-tab active" data-tab="home">Home.go</button>
-
-          <button class="editor-tab" data-tab="about">AboutMe.go</button>
-
-          <button class="editor-tab" data-tab="skills">Skills.go</button>
-
-          <button class="editor-tab" data-tab="services">Services.go</button>
-
-          <button class="editor-tab" data-tab="education">Education.go</button>
-
-          <button class="editor-tab" data-tab="certificates">
-            Certificates.go
-          </button>
-
-          <button class="editor-tab" data-tab="projects">Projects.go</button>
-
-          <button class="editor-tab" data-tab="gallery">Gallery.go</button>
-
-          <button class="editor-tab" data-tab="contact">Contact.go</button>
-        </div>
-
-        <!-- Editor Content -->
-        <div class="editor-content">
-          <!-- Home -->
-          <div class="code-panel active" data-panel="home">
-            <div class="code-editor">
-              <div class="line-numbers"></div>
-
-              <pre><code><span class="comment">// Welcome to my portfolio</span>
-
-<span class="keyword">const</span> developer = {
-    name: <span class="string">"{{ .Portfolio.Profile.Name }}"</span>,
-    title: <span class="string">"{{ .Portfolio.Profile.Title }}"</span>,
-    location: <span class="string">"{{ .Portfolio.Profile.Location }}"</span>
-};</code></pre>
-            </div>
-          </div>
-
-          <!-- About -->
-          <div class="code-panel" data-panel="about">
-            <div class="code-editor">
-              <div class="line-numbers"></div>
-
-              <pre><code><span class="comment">// About me</span>
-
-<span class="keyword">const</span> about = {
-    bio: <span class="string">"{{ .Portfolio.Profile.Bio }}"</span>
-};</code></pre>
-            </div>
-          </div>
-
-          <!-- Skills -->
-          <div class="code-panel" data-panel="skills">
-            <div class="code-editor">
-              <div class="line-numbers"></div>
-
-              <pre><code><span class="comment">// Technologies I work with</span>
-
-<span class="keyword">const</span> skills = [
-
-{{ range .Portfolio.Skills }}
-    {
-        name: <span class="string">"{{ .Name }}"</span>,
-        proficiency: <span class="number">{{ .Proficiency }}</span>
-    },
-{{ end }}
-
-];</code></pre>
-            </div>
-          </div>
-
-          <!-- Services -->
-          <div class="code-panel" data-panel="services">
-            <div class="code-editor">
-              <div class="line-numbers"></div>
-
-              <pre><code><span class="comment">// Services</span>
-
-<span class="keyword">const</span> services = [
-
-{{ range .Portfolio.Services }}
-    {
-        title: <span class="string">"{{ .Title }}"</span>,
-        description: <span class="string">"{{ .Description }}"</span>
-    },
-{{ end }}
-
-];</code></pre>
-            </div>
-          </div>
-
-          <!-- Education -->
-          <div class="code-panel" data-panel="education">
-            <div class="code-editor">
-              <div class="line-numbers"></div>
-
-              <pre><code><span class="comment">// Education</span>
-
-<span class="keyword">const</span> education = [
-
-{{ range .Portfolio.Education }}
-    {
-        institution: <span class="string">"{{ .Institution }}"</span>,
-        degree: <span class="string">"{{ .Degree }}"</span>,
-        field: <span class="string">"{{ .Field }}"</span>
-    },
-{{ end }}
-
-];</code></pre>
-            </div>
-          </div>
-
-          <!-- Certificates -->
-          <div class="code-panel" data-panel="certificates">
-            <div class="code-editor">
-              <div class="line-numbers"></div>
-
-              <pre><code><span class="comment">// Professional certifications</span>
-
-<span class="keyword">const</span> certificates = [
-
-{{ range .Portfolio.Certificates }}
-    {
-        title: <span class="string">"{{ .Title }}"</span>,
-        issuer: <span class="string">"{{ .Issuer }}"</span>,
-        issueDate: <span class="string">"{{ .IssueDate }}"</span>,
-        credentialID: <span class="string">"{{ .CredentialID }}"</span>
-    },
-{{ end }}
-
-];</code></pre>
-            </div>
-          </div>
-
-          <!-- Projects -->
-          <div class="code-panel" data-panel="projects">
-            <div class="code-editor">
-              <div class="line-numbers"></div>
-
-              <pre><code><span class="comment">// Projects</span>
-
-<span class="keyword">const</span> projects = [
-
-{{ range .Portfolio.Projects }}
-    {
-        name: <span class="string">"{{ .Name }}"</span>,
-        description: <span class="string">"{{ .Description }}"</span>
-    },
-{{ end }}
-
-];</code></pre>
-            </div>
-          </div>
-
-          <!-- Gallery -->
-          <div class="code-panel" data-panel="gallery">
-            <div class="code-editor">
-              <div class="line-numbers"></div>
-
-              <pre><code><span class="comment">// Gallery</span>
-
-// Coming soon.</code></pre>
-            </div>
-          </div>
-
-          <!-- Contact -->
-          <div class="code-panel" data-panel="contact">
-            <div class="code-editor">
-              <div class="line-numbers"></div>
-
-              <pre><code><span class="comment">// Contact information</span>
-
-<span class="keyword">const</span> contact = {
-    email: <span class="string">"{{ .Portfolio.Contact.Email }}"</span>,
-    location: <span class="string">"{{ .Portfolio.Contact.Location }}"</span>
-};</code></pre>
-            </div>
-          </div>
-        </div>
-      </main>
+<div class="vscode-app">
+  <!-- Top Application Menu Bar -->
+  <header class="vscode-titlebar">
+    <div class="window-controls">
+      <span class="control-dot dot-close"></span>
+      <span class="control-dot dot-minimize"></span>
+      <span class="control-dot dot-maximize"></span>
     </div>
+    <span class="app-title">VS Code Portfolio — {{ .Portfolio.Profile.Name }}</span>
+    <div class="titlebar-actions">
+      <span class="theme-badge">Night Owl</span>
+      <a href="/client" class="view-switch-btn">Client View ↗</a>
+    </div>
+  </header>
 
-    <!-- Status Bar -->
-    <footer class="dev-statusbar">
-      <div class="status-file">Home.go</div>
-
-      <div class="status-right">
-        <span>Ln 1, Col 1</span>
-        <span>UTF-8</span>
-        <span>LF</span>
-        <span>Go</span>
+  <div class="vscode-workspace">
+    <!-- Activity Bar (Far Left Icons) -->
+    <!-- Activity Bar (Far Left Icons) -->
+    <aside class="activity-bar">
+      <div class="activity-top">
+        <button class="activity-btn active" data-tab="home" title="Explorer (Home.go)">📄</button>
+        <button class="activity-btn" data-tab="skills" title="Skills & Capabilities (Skills.go)">🔍</button>
+        <button class="activity-btn" data-tab="projects" title="Source Control & Projects (Projects.go)">🌿</button>
+        <button class="activity-btn" data-tab="education" title="Academic Background (Education.go)">🎓</button>
+        <button class="activity-btn" data-tab="certificates" title="Packages & Certifications (Certificates.go)">📦</button>
       </div>
-    </footer>
-  </div>
-</section>
+      <div class="activity-bottom">
+        <button class="activity-btn" data-tab="contact" title="Settings & Contact (Contact.go)">⚙️</button>
+      </div>
+    </aside>
 
+    <!-- Side Bar: File Explorer -->
+    <aside class="sidebar-explorer">
+      <div class="explorer-header">
+        <span>EXPLORER</span>
+      </div>
+      <div class="explorer-section">
+        <div class="folder-title">
+          <span class="arrow-down">▾</span>
+          <strong>{{ .Portfolio.Profile.Name }}'S-PORTFOLIO</strong>
+        </div>
+        <ul class="file-list">
+          <li class="file-item active" data-tab="home">
+            <span class="file-icon icon-go"></span> Home.go
+          </li>
+          <li class="file-item" data-tab="about">
+            <span class="file-icon icon-go"></span> AboutMe.go
+          </li>
+          <li class="file-item" data-tab="skills">
+            <span class="file-icon icon-go"></span> Skills.go
+          </li>
+          <li class="file-item" data-tab="education">
+            <span class="file-icon icon-go"></span> Education.go
+          </li>
+          <li class="file-item" data-tab="projects">
+            <span class="file-icon icon-go"></span> Projects.go
+          </li>
+          <li class="file-item" data-tab="certificates">
+            <span class="file-icon icon-go"></span> Certificates.go
+          </li>
+          <li class="file-item" data-tab="contact">
+            <span class="file-icon icon-go"></span> Contact.go
+          </li>
+        </ul>
+      </div>
+
+      <!-- Social File Explorer Footer -->
+      <div class="explorer-section social-section">
+        <div class="folder-title">
+          <span class="arrow-down">▾</span>
+          <strong>SOCIAL</strong>
+        </div>
+        <ul class="file-list">
+          {{ range .Portfolio.SocialLinks }}
+          <li>
+            <a href="{{ .URL }}" target="_blank" rel="noopener noreferrer" class="social-file-link">
+              <span class="file-icon">↗</span> {{ .Platform }}
+            </a>
+          </li>
+          {{ end }}
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Code Editor Stage -->
+    <main class="editor-stage">
+      <!-- Tab Bar -->
+      <div class="editor-tabs-bar">
+        <div class="tab-item active" data-tab="home">
+          <span class="file-icon icon-go"></span> Home.go <span class="tab-close">×</span>
+        </div>
+        <div class="tab-item" data-tab="about">
+          <span class="file-icon icon-go"></span> AboutMe.go <span class="tab-close">×</span>
+        </div>
+        <div class="tab-item" data-tab="skills">
+          <span class="file-icon icon-go"></span> Skills.go <span class="tab-close">×</span>
+        </div>
+        <div class="tab-item" data-tab="education">
+          <span class="file-icon icon-go"></span> Education.go <span class="tab-close">×</span>
+        </div>
+        <div class="tab-item" data-tab="projects">
+          <span class="file-icon icon-go"></span> Projects.go <span class="tab-close">×</span>
+        </div>
+        <div class="tab-item" data-tab="certificates">
+          <span class="file-icon icon-go"></span> Certificates.go <span class="tab-close">×</span>
+        </div>
+        <div class="tab-item" data-tab="contact">
+          <span class="file-icon icon-go"></span> Contact.go <span class="tab-close">×</span>
+        </div>
+      </div>
+
+      <!-- Editor Viewport -->
+      <div class="editor-viewport">
+        
+        <!-- ================= PERMANENT PINNED HOME BLOCK ================= -->
+        <section class="pinned-home-pane" id="pinned-home">
+          <div class="code-comment glow-typewriter" data-text="// Hi, I'm a Developer">// Hi, I'm a Developer</div>
+          <h1 class="pane-headline">Welcome to my portfolio</h1>
+          <div class="component-tag">&lt;Portfolio /&gt;</div>
+
+          <div class="home-split-view">
+            <!-- Left Side: Code Block -->
+            <div class="code-block-card">
+              <pre><code><span class="syn-kw">package</span> main
+
+<span class="syn-kw">type</span> <span class="syn-var">Developer</span> <span class="syn-kw">struct</span> {
+  <span class="syn-key">Name</span>         <span class="syn-kw">string</span>   <span class="syn-str">`json:"name"`</span>
+  <span class="syn-key">Title</span>        <span class="syn-kw">string</span>   <span class="syn-str">`json:"title"`</span>
+  <span class="syn-key">Skills</span>       []<span class="syn-kw">string</span> <span class="syn-str">`json:"skills"`</span>
+  <span class="syn-key">Passion</span>      <span class="syn-kw">string</span>   <span class="syn-str">`json:"passion"`</span>
+  <span class="syn-key">Availability</span> <span class="syn-kw">string</span>   <span class="syn-str">`json:"availability"`</span>
+}
+
+<span class="syn-kw">var</span> dev = <span class="syn-var">Developer</span>{
+  <span class="syn-key">Name</span>:         <span class="syn-str">"{{ .Portfolio.Profile.Name }}"</span>,
+  <span class="syn-key">Title</span>:        <span class="syn-str">"{{ .Portfolio.Profile.Title }}"</span>,
+  <span class="syn-key">Skills</span>:       []<span class="syn-kw">string</span>{
+    {{ range $i, $e := .Portfolio.Skills }}{{ if eq $i 5 }}
+    {{ end }}{{ if $i }}, {{ end }}<span class="syn-str">"{{ $e.Name }}"</span>{{ end }},
+  },
+  <span class="syn-key">Passion</span>:      <span class="syn-str">"Building high-performance distributed web systems"</span>,
+  <span class="syn-key">Availability</span>: <span class="syn-str">"{{ .Portfolio.Profile.Availability }}"</span>,
+}</code></pre>
+              <a href="/resume" class="download-cv-btn">Download CV 📥</a>
+            </div>
+
+            <!-- Right Side: Portrait Image Frame (Clickable Lightbox Trigger) -->
+            <div class="dev-portrait-card" onclick="openDevModal('{{ if .Portfolio.Profile.ProfileImage }}{{ .Portfolio.Profile.ProfileImage }}{{ else }}/static/images/profile.png{{ end }}', '{{ .Portfolio.Profile.Name }}', '{{ .Portfolio.Profile.Title }}')">
+              <div class="portrait-image-wrapper">
+                <img
+                  src="{{ if .Portfolio.Profile.ProfileImage }}{{ .Portfolio.Profile.ProfileImage }}{{ else }}/static/images/profile.png{{ end }}"
+                  alt="{{ .Portfolio.Profile.Name }}"
+                  class="dev-avatar-img"
+                  onerror="this.onerror=null; this.src='/static/images/profile.png';"
+                />
+                <div class="portrait-zoom-hint">🔍 Expand</div>
+                <div class="portrait-overlay-badge">
+                  <h4 class="portrait-name">{{ .Portfolio.Profile.Name }}</h4>
+                  <p class="portrait-role">{{ .Portfolio.Profile.Title }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom: Metric Row -->
+          <div class="ide-stats-row">
+            {{ range .Portfolio.Statistics }}
+            <div class="ide-stat-card">
+              <h3>{{ .Value }}</h3>
+              <p>{{ .Label }}</p>
+            </div>
+            {{ end }}
+          </div>
+        </section>
+
+        <!-- Divider Line between Pinned Header and Selected File Content -->
+        <hr class="ide-section-divider" />
+
+        <!-- ================= DYNAMIC SUB-PANES (RENDERED DIRECTLY BELOW) ================= -->
+        <div class="dynamic-subpanes-wrapper">
+
+          <!-- 1. EMPTY / DEFAULT HOME SUBPANE -->
+          <section class="tab-content active" id="pane-home">
+            <div class="editor-file-status">
+              <span class="syn-kw">// Current File:</span> <code>Home.go</code> <span class="status-badge">active</span>
+            </div>
+          </section>
+
+          <!-- 2. ABOUT PANE -->
+          <section class="tab-content" id="pane-about">
+            <div class="code-comment glow-typewriter" data-text="// About Me">// About Me</div>
+            <h2 class="subpane-headline">Engineering Bio</h2>
+            
+            <div class="code-block-card">
+              <p class="code-prose">{{ .Portfolio.Profile.Bio }}</p>
+              <div class="meta-tag-list">
+                <span class="meta-pill">📍 Location: {{ .Portfolio.Profile.Location }}</span>
+                <span class="meta-pill">⚡ Status: {{ .Portfolio.Profile.Availability }}</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. SKILLS PANE -->
+          <section class="tab-content" id="pane-skills">
+            <div class="code-comment glow-typewriter" data-text="// Skills">// Skills</div>
+            <h2 class="subpane-headline">Technical Proficiency</h2>
+            <p class="pane-subtext">A comprehensive overview of my technical skills and stack mastery</p>
+
+            <div class="skills-ide-grid">
+              <div class="ide-panel-box">
+                <div class="panel-header glow-typewriter" data-text="// Core Capabilities">// Core Capabilities</div>
+                <div class="skills-meter-list">
+                  {{ range $index, $skill := .Portfolio.Skills }}
+                  <div class="skill-meter-row color-scheme-{{ $index }}">
+                    <div class="meter-info">
+                      <span class="meter-name">{{ $skill.Name }}</span>
+                      <span class="meter-val">{{ $skill.Proficiency }}%</span>
+                    </div>
+                    <div class="meter-bar">
+                      <div class="meter-fill" data-fill="{{ $skill.Proficiency }}"></div>
+                    </div>
+                  </div>
+                  {{ end }}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. EDUCATION PANE -->
+          <section class="tab-content" id="pane-education">
+            <div class="code-comment glow-typewriter" data-text="// Education">// Education</div>
+            <h2 class="subpane-headline">Academic Background</h2>
+            <p class="pane-subtext">My educational journey and continuous learning path</p>
+
+            <div class="ide-card-stack">
+              {{ range .Portfolio.Education }}
+              <div class="ide-panel-box edu-panel">
+                <div class="edu-top">
+                  <span class="edu-degree">🎓 {{ .Degree }} in {{ .Field }}</span>
+                  <span class="edu-years">📅 {{ .StartYear }} - {{ .EndYear }}</span>
+                </div>
+                <h4 class="edu-inst">{{ .Institution }}</h4>
+                <p class="edu-desc">{{ .Description }}</p>
+              </div>
+              {{ end }}
+            </div>
+          </section>
+
+          <!-- 5. PROJECTS PANE -->
+          <section class="tab-content" id="pane-projects">
+            <div class="code-comment glow-typewriter" data-text="// Projects">// Projects</div>
+            <h2 class="subpane-headline">Shipped Applications</h2>
+            
+            <div class="ide-projects-grid">
+              {{ range .Portfolio.Projects }}
+              <div class="ide-project-card">
+                {{ if .Image }}
+                <div class="ide-proj-img-wrap">
+                  <img src="{{ .Image }}" alt="{{ .Name }}" />
+                </div>
+                {{ end }}
+                <div class="ide-proj-body">
+                  <h3>{{ .Name }}</h3>
+                  <p>{{ .Description }}</p>
+                  <div class="proj-tech-tags">
+                    {{ range .Technologies }}
+                    <span class="ide-tag">{{ . }}</span>
+                    {{ end }}
+                  </div>
+                  <div class="ide-proj-actions">
+                    {{ if .URL }}<a href="{{ .URL }}" target="_blank" rel="noopener">Live Demo ↗</a>{{ end }}
+                    {{ if .GitHub }}<a href="{{ .GitHub }}" target="_blank" rel="noopener">GitHub ↗</a>{{ end }}
+                  </div>
+                </div>
+              </div>
+              {{ end }}
+            </div>
+          </section>
+
+          <!-- 6. CERTIFICATES PANE -->
+          <section class="tab-content" id="pane-certificates">
+            <div class="code-comment glow-typewriter" data-text="// Credentials">// Credentials</div>
+            <h2 class="subpane-headline">Certifications &amp; Licenses</h2>
+            
+            <div class="ide-cert-grid">
+              {{ range .Portfolio.Certificates }}
+              <div class="ide-cert-card">
+                {{ if .Image }}
+                <div class="ide-cert-img-box">
+                  <img src="{{ .Image }}" alt="{{ .Title }}" />
+                </div>
+                {{ end }}
+                <div class="ide-cert-details">
+                  <span class="cert-org">{{ .Issuer }}</span>
+                  <h4>{{ .Title }}</h4>
+                  {{ if .IssueDate }}<span class="cert-date">Issued: {{ .IssueDate }}</span>{{ end }}
+                  {{ if .Description }}<p>{{ .Description }}</p>{{ end }}
+                  {{ if .VerificationURL }}
+                  <a href="{{ .VerificationURL }}" target="_blank" rel="noopener" class="cert-verify-link">Verify Credential ↗</a>
+                  {{ end }}
+                </div>
+              </div>
+              {{ end }}
+            </div>
+          </section>
+
+         <!-- 7. CONTACT PANE -->
+          <section class="tab-content" id="pane-contact">
+            <div class="code-comment glow-typewriter" data-text="// Contact">// Contact</div>
+            <h2 class="subpane-headline">Let's Connect</h2>
+            
+            <div class="code-block-card">
+              <pre><code><span class="syn-kw">package</span> main
+
+<span class="syn-kw">var</span> ContactDetails = <span class="syn-kw">map</span>[<span class="syn-kw">string</span>]<span class="syn-kw">string</span>{
+  <span class="syn-key">"email"</span>:    <span class="syn-str">"{{ .Portfolio.Contact.Email }}"</span>,
+  <span class="syn-key">"phone"</span>:    <span class="syn-str">"{{ .Portfolio.Contact.Phone }}"</span>,
+  <span class="syn-key">"whatsapp"</span>: <span class="syn-str">"{{ .Portfolio.Contact.Phone }}"</span>,
+  <span class="syn-key">"location"</span>: <span class="syn-str">"{{ .Portfolio.Contact.Location }}"</span>,
+}</code></pre>
+              
+              <div class="contact-action-group">
+                <!-- Direct Email Client Link -->
+                <a 
+                  href="mailto:{{ .Portfolio.Contact.Email }}?subject=Inquiry%20from%20Portfolio&body=Hi%20{{ .Portfolio.Profile.Name }},%0D%0A%0D%0AI%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss..." 
+                  class="download-cv-btn send-email-btn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Send Email ✉
+                </a>
+
+                <!-- Gmail Webmail Link -->
+                <a 
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to={{ .Portfolio.Contact.Email }}&su=Inquiry+from+Portfolio" 
+                  class="download-cv-btn gmail-btn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open in Gmail ↗
+                </a>
+
+                <!-- Direct WhatsApp Chat Link -->
+                {{ if .Portfolio.Contact.Phone }}
+                <a 
+                  href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }},%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20connect!" 
+                  class="download-cv-btn whatsapp-btn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Chat on WhatsApp 💬
+                </a>
+                {{ end }}
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Developer Portrait Lightbox Modal (60%+ Viewport) -->
+  <div id="dev-portrait-modal" class="dev-modal" onclick="closeDevModal(event)">
+    <div class="dev-modal-dialog">
+      <button class="dev-modal-close" onclick="closeDevModalDirect()">&times;</button>
+      <div class="dev-modal-body">
+        <img id="dev-modal-img" src="" alt="Developer Portrait Preview" />
+      </div>
+      <div class="dev-modal-caption">
+        <h3 id="dev-modal-name"></h3>
+        <p id="dev-modal-role"></p>
+      </div>
+    </div>
+  </div>
+</div>
 {{ end }}
+
+

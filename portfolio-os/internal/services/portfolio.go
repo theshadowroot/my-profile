@@ -2,7 +2,7 @@ package services
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"os"
 	"sync"
 
@@ -11,407 +11,253 @@ import (
 
 type PortfolioService struct {
 	mu        sync.RWMutex
-	portfolio *models.Portfolio
-	path      string
+	filePath  string
+	portfolio models.Portfolio
 }
 
-func NewPortfolioService(path string) (*PortfolioService, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("open portfolio data: %w", err)
+func NewPortfolioService(filePath string) (*PortfolioService, error) {
+	s := &PortfolioService{
+		filePath: filePath,
 	}
-	defer file.Close()
-
-	var portfolio models.Portfolio
-
-	if err := json.NewDecoder(file).Decode(&portfolio); err != nil {
-		return nil, fmt.Errorf("decode portfolio data: %w", err)
+	if err := s.load(); err != nil {
+		return nil, err
 	}
-
-	return &PortfolioService{
-		portfolio: &portfolio,
-		path:      path,
-	}, nil
+	return s, nil
 }
 
-func (s *PortfolioService) GetPortfolio() *models.Portfolio {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	return s.portfolio
-}
-
-func (s *PortfolioService) UpdateProfile(
-	profile models.Profile,
-) error {
+func (s *PortfolioService) load() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.portfolio.Profile = profile
+	data, err := os.ReadFile(s.filePath)
+	if err != nil {
+		return err
+	}
 
-	return s.save()
+	return json.Unmarshal(data, &s.portfolio)
 }
 
 func (s *PortfolioService) save() error {
-	file, err := os.Create(s.path)
+	data, err := json.MarshalIndent(s.portfolio, "", "    ")
 	if err != nil {
-		return fmt.Errorf("create portfolio data: %w", err)
+		return err
 	}
-	defer file.Close()
+	return os.WriteFile(s.filePath, data, 0644)
+}
 
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "    ")
+func (s *PortfolioService) GetPortfolio() models.Portfolio {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.portfolio
+}
 
-	if err := encoder.Encode(s.portfolio); err != nil {
-		return fmt.Errorf("encode portfolio data: %w", err)
+// Profile
+func (s *PortfolioService) UpdateProfile(p models.Profile) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.portfolio.Profile = p
+	return s.save()
+}
+
+// Certificates
+func (s *PortfolioService) AddCertificate(c models.Certificate) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.portfolio.Certificates = append(s.portfolio.Certificates, c)
+	return s.save()
+}
+
+func (s *PortfolioService) UpdateCertificate(idx int, c models.Certificate) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if idx < 0 || idx >= len(s.portfolio.Certificates) {
+		return errors.New("certificate index out of range")
 	}
-
-	return nil
-}
-
-func (s *PortfolioService) AddCertificate(
-	certificate models.Certificate,
-) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.portfolio.Certificates = append(
-		s.portfolio.Certificates,
-		certificate,
-	)
-
+	s.portfolio.Certificates[idx] = c
 	return s.save()
 }
 
-func (s *PortfolioService) UpdateCertificate(
-	index int,
-	certificate models.Certificate,
-) error {
+func (s *PortfolioService) DeleteCertificate(idx int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	if index < 0 || index >= len(s.portfolio.Certificates) {
-		return fmt.Errorf("certificate not found")
+	if idx < 0 || idx >= len(s.portfolio.Certificates) {
+		return errors.New("certificate index out of range")
 	}
-
-	s.portfolio.Certificates[index] = certificate
-
+	s.portfolio.Certificates = append(s.portfolio.Certificates[:idx], s.portfolio.Certificates[idx+1:]...)
 	return s.save()
 }
 
-func (s *PortfolioService) DeleteCertificate(
-	index int,
-) error {
+// Skills
+func (s *PortfolioService) AddSkill(skill models.Skill) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.portfolio.Skills = append(s.portfolio.Skills, skill)
+	return s.save()
+}
 
-	if index < 0 || index >= len(s.portfolio.Certificates) {
-		return fmt.Errorf("certificate not found")
+func (s *PortfolioService) UpdateSkill(idx int, skill models.Skill) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if idx < 0 || idx >= len(s.portfolio.Skills) {
+		return errors.New("skill index out of range")
 	}
-
-	s.portfolio.Certificates = append(
-		s.portfolio.Certificates[:index],
-		s.portfolio.Certificates[index+1:]...,
-	)
-
+	s.portfolio.Skills[idx] = skill
 	return s.save()
 }
 
-func (s *PortfolioService) AddSkill(
-	skill models.Skill,
-) error {
+func (s *PortfolioService) DeleteSkill(idx int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	s.portfolio.Skills = append(
-		s.portfolio.Skills,
-		skill,
-	)
-
-	return s.save()
-}
-
-func (s *PortfolioService) UpdateSkill(
-	index int,
-	skill models.Skill,
-) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if index < 0 || index >= len(s.portfolio.Skills) {
-		return fmt.Errorf("skill not found")
+	if idx < 0 || idx >= len(s.portfolio.Skills) {
+		return errors.New("skill index out of range")
 	}
-
-	s.portfolio.Skills[index] = skill
-
+	s.portfolio.Skills = append(s.portfolio.Skills[:idx], s.portfolio.Skills[idx+1:]...)
 	return s.save()
 }
 
-func (s *PortfolioService) DeleteSkill(
-	index int,
-) error {
+// Statistics
+func (s *PortfolioService) AddStatistic(stat models.Statistic) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.portfolio.Statistics = append(s.portfolio.Statistics, stat)
+	return s.save()
+}
 
-	if index < 0 || index >= len(s.portfolio.Skills) {
-		return fmt.Errorf("skill not found")
+func (s *PortfolioService) UpdateStatistic(idx int, stat models.Statistic) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if idx < 0 || idx >= len(s.portfolio.Statistics) {
+		return errors.New("statistic index out of range")
 	}
-
-	s.portfolio.Skills = append(
-		s.portfolio.Skills[:index],
-		s.portfolio.Skills[index+1:]...,
-	)
-
+	s.portfolio.Statistics[idx] = stat
 	return s.save()
 }
 
-func (s *PortfolioService) AddStatistic(
-	statistic models.Statistic,
-) error {
+func (s *PortfolioService) DeleteStatistic(idx int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	s.portfolio.Statistics = append(
-		s.portfolio.Statistics,
-		statistic,
-	)
-
-	return s.save()
-}
-
-func (s *PortfolioService) UpdateStatistic(
-	index int,
-	statistic models.Statistic,
-) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if index < 0 || index >= len(s.portfolio.Statistics) {
-		return fmt.Errorf("statistic not found")
+	if idx < 0 || idx >= len(s.portfolio.Statistics) {
+		return errors.New("statistic index out of range")
 	}
-
-	s.portfolio.Statistics[index] = statistic
-
+	s.portfolio.Statistics = append(s.portfolio.Statistics[:idx], s.portfolio.Statistics[idx+1:]...)
 	return s.save()
 }
 
-func (s *PortfolioService) DeleteStatistic(
-	index int,
-) error {
+// Services
+func (s *PortfolioService) AddService(srv models.ServiceOffering) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.portfolio.Services = append(s.portfolio.Services, srv)
+	return s.save()
+}
 
-	if index < 0 || index >= len(s.portfolio.Statistics) {
-		return fmt.Errorf("statistic not found")
+func (s *PortfolioService) UpdateService(idx int, srv models.ServiceOffering) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if idx < 0 || idx >= len(s.portfolio.Services) {
+		return errors.New("service index out of range")
 	}
-
-	s.portfolio.Statistics = append(
-		s.portfolio.Statistics[:index],
-		s.portfolio.Statistics[index+1:]...,
-	)
-
+	s.portfolio.Services[idx] = srv
 	return s.save()
 }
 
-func (s *PortfolioService) AddService(
-	service models.ServiceOffering,
-) error {
+func (s *PortfolioService) DeleteService(idx int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	s.portfolio.Services = append(
-		s.portfolio.Services,
-		service,
-	)
-
-	return s.save()
-}
-
-func (s *PortfolioService) UpdateService(
-	index int,
-	service models.ServiceOffering,
-) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if index < 0 || index >= len(s.portfolio.Services) {
-		return fmt.Errorf("service not found")
+	if idx < 0 || idx >= len(s.portfolio.Services) {
+		return errors.New("service index out of range")
 	}
-
-	s.portfolio.Services[index] = service
-
+	s.portfolio.Services = append(s.portfolio.Services[:idx], s.portfolio.Services[idx+1:]...)
 	return s.save()
 }
 
-func (s *PortfolioService) DeleteService(
-	index int,
-) error {
+// Education
+func (s *PortfolioService) AddEducation(edu models.EducationEntry) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.portfolio.Education = append(s.portfolio.Education, edu)
+	return s.save()
+}
 
-	if index < 0 || index >= len(s.portfolio.Services) {
-		return fmt.Errorf("service not found")
+func (s *PortfolioService) UpdateEducation(idx int, edu models.EducationEntry) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if idx < 0 || idx >= len(s.portfolio.Education) {
+		return errors.New("education index out of range")
 	}
-
-	s.portfolio.Services = append(
-		s.portfolio.Services[:index],
-		s.portfolio.Services[index+1:]...,
-	)
-
+	s.portfolio.Education[idx] = edu
 	return s.save()
 }
 
-func (s *PortfolioService) AddEducation(
-	entry models.EducationEntry,
-) error {
+func (s *PortfolioService) DeleteEducation(idx int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	s.portfolio.Education = append(
-		s.portfolio.Education,
-		entry,
-	)
-
-	return s.save()
-}
-
-func (s *PortfolioService) UpdateEducation(
-	index int,
-	entry models.EducationEntry,
-) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if index < 0 || index >= len(s.portfolio.Education) {
-		return fmt.Errorf("education entry not found")
+	if idx < 0 || idx >= len(s.portfolio.Education) {
+		return errors.New("education index out of range")
 	}
-
-	s.portfolio.Education[index] = entry
-
+	s.portfolio.Education = append(s.portfolio.Education[:idx], s.portfolio.Education[idx+1:]...)
 	return s.save()
 }
 
-func (s *PortfolioService) DeleteEducation(
-	index int,
-) error {
+// Projects
+func (s *PortfolioService) AddProject(proj models.Project) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.portfolio.Projects = append(s.portfolio.Projects, proj)
+	return s.save()
+}
 
-	if index < 0 || index >= len(s.portfolio.Education) {
-		return fmt.Errorf("education entry not found")
+func (s *PortfolioService) UpdateProject(idx int, proj models.Project) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if idx < 0 || idx >= len(s.portfolio.Projects) {
+		return errors.New("project index out of range")
 	}
-
-	s.portfolio.Education = append(
-		s.portfolio.Education[:index],
-		s.portfolio.Education[index+1:]...,
-	)
-
+	s.portfolio.Projects[idx] = proj
 	return s.save()
 }
 
-func (s *PortfolioService) AddProject(
-	project models.Project,
-) error {
+func (s *PortfolioService) DeleteProject(idx int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	s.portfolio.Projects = append(
-		s.portfolio.Projects,
-		project,
-	)
-
-	return s.save()
-}
-
-func (s *PortfolioService) UpdateProject(
-	index int,
-	project models.Project,
-) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if index < 0 || index >= len(s.portfolio.Projects) {
-		return fmt.Errorf("project not found")
+	if idx < 0 || idx >= len(s.portfolio.Projects) {
+		return errors.New("project index out of range")
 	}
-
-	s.portfolio.Projects[index] = project
-
+	s.portfolio.Projects = append(s.portfolio.Projects[:idx], s.portfolio.Projects[idx+1:]...)
 	return s.save()
 }
 
-func (s *PortfolioService) DeleteProject(
-	index int,
-) error {
+// Contact & Social
+func (s *PortfolioService) UpdateContact(contact models.ContactInfo) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	if index < 0 || index >= len(s.portfolio.Projects) {
-		return fmt.Errorf("project not found")
-	}
-
-	s.portfolio.Projects = append(
-		s.portfolio.Projects[:index],
-		s.portfolio.Projects[index+1:]...,
-	)
-
-	return s.save()
-}
-
-func (s *PortfolioService) UpdateContact(
-	contact models.ContactInfo,
-) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	s.portfolio.Contact = contact
-
 	return s.save()
 }
 
-func (s *PortfolioService) AddSocialLink(
-	link models.SocialLink,
-) error {
+func (s *PortfolioService) AddSocialLink(link models.SocialLink) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	s.portfolio.SocialLinks = append(
-		s.portfolio.SocialLinks,
-		link,
-	)
-
+	s.portfolio.SocialLinks = append(s.portfolio.SocialLinks, link)
 	return s.save()
 }
 
-func (s *PortfolioService) UpdateSocialLink(
-	index int,
-	link models.SocialLink,
-) error {
+func (s *PortfolioService) UpdateSocialLink(idx int, link models.SocialLink) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	if index < 0 || index >= len(s.portfolio.SocialLinks) {
-		return fmt.Errorf("social link not found")
+	if idx < 0 || idx >= len(s.portfolio.SocialLinks) {
+		return errors.New("social link index out of range")
 	}
-
-	s.portfolio.SocialLinks[index] = link
-
+	s.portfolio.SocialLinks[idx] = link
 	return s.save()
 }
 
-func (s *PortfolioService) DeleteSocialLink(
-	index int,
-) error {
+func (s *PortfolioService) DeleteSocialLink(idx int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	if index < 0 || index >= len(s.portfolio.SocialLinks) {
-		return fmt.Errorf("social link not found")
+	if idx < 0 || idx >= len(s.portfolio.SocialLinks) {
+		return errors.New("social link index out of range")
 	}
-
-	s.portfolio.SocialLinks = append(
-		s.portfolio.SocialLinks[:index],
-		s.portfolio.SocialLinks[index+1:]...,
-	)
-
+	s.portfolio.SocialLinks = append(s.portfolio.SocialLinks[:idx], s.portfolio.SocialLinks[idx+1:]...)
 	return s.save()
 }

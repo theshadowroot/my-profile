@@ -1,131 +1,348 @@
 {{ define "client-view" }}
-
 <section id="client-view" class="client-site">
-
-    <!-- Navigation -->
-    <nav class="client-nav">
-        ...
+  <!-- Top Navigation Bar -->
+  <header class="navbar-wrapper">
+    <nav class="container nav-container">
+      <a href="#hero" class="nav-brand">
+        <span class="brand-bracket">&lt;/&gt;</span> {{ .Portfolio.Profile.Name }}
+      </a>
+      <ul class="nav-menu">
+        <li><a href="#hero" class="nav-link active">Home</a></li>
+        <li><a href="#about" class="nav-link">About</a></li>
+        <li><a href="#skills" class="nav-link">Skills</a></li>
+        <li><a href="#projects" class="nav-link">Projects</a></li>
+        <li><a href="#certificates" class="nav-link">Certificates</a></li>
+        <li><a href="#contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="/developer" class="btn btn-outline btn-sm dev-view-btn">Developer View 💻</a>
+        {{ if .Portfolio.Contact.Phone }}
+        <a href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }},%20I'd%20like%20to%20hire%20you!" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Hire Me ↗</a>
+        {{ else }}
+        <a href="#contact" class="btn btn-primary btn-sm">Hire Me ↗</a>
+        {{ end }}
+      </div>
     </nav>
+  </header>
 
-    <!-- Hero -->
-    <section class="hero">
-        ...
-    </section>
+  <!-- Hero Section -->
+  <section id="hero" class="hero-section">
+    <div class="container hero-grid">
+      <div class="hero-text">
+        <div class="pill-badge">{{ .Portfolio.Profile.Title }}</div>
+        <h1 class="hero-title">
+          Hi, I'm
+          <span class="text-gradient">{{ .Portfolio.Profile.Name }}</span><br />
+          I build things for the web.
+        </h1>
+        <p class="hero-bio">{{ .Portfolio.Profile.Bio }}</p>
 
-    <!-- Statistics -->
-    <section class="stats">
-        ...
-    </section>
-
-    <!-- About -->
-    <section id="about" class="section about">
-        ...
-    </section>
-
-    <!-- Services -->
-    <section id="services" class="section">
-        ...
-    </section>
-
-    <!-- Skills -->
-    <section id="skills" class="section skills">
-        ...
-    </section>
-
-    <!-- Education -->
-    <section id="education" class="section">
-        ...
-    </section>
-
-    <!-- Certificates -->
-    <section id="certificates" class="section">
-    <div class="container">
-
-        <div class="section-header">
-            <span class="section-label">Certifications</span>
-
-            <h2>
-                Professional certifications
-            </h2>
+        <div class="hero-actions">
+          <a href="#projects" class="btn btn-primary">View My Work ↗</a>
+          <a href="#about" class="btn btn-outline">About Me 🪪</a>
         </div>
 
-        <div class="projects-grid">
+        {{ if .Portfolio.Skills }}
+        <div class="hero-tech-stack">
+          <span class="tech-label">TECHNOLOGIES I WORK WITH</span>
+          <div class="tech-icons">
+            {{ range .Portfolio.Skills }}
+            <span class="tech-tag-pill">{{ .Name }}</span>
+            {{ end }}
+          </div>
+        </div>
+        {{ end }}
+      </div>
 
-            {{ range .Portfolio.Certificates }}
+      <div class="hero-visual">
+        <div class="avatar-backdrop">
+          <img
+            src="{{ if .Portfolio.Profile.ProfileImage }}{{ .Portfolio.Profile.ProfileImage }}{{ else }}/static/images/profile.png{{ end }}"
+            alt="{{ .Portfolio.Profile.Name }}"
+            class="hero-img"
+          />
+        </div>
 
-            <article class="card certificate-card">
+        <!-- Floating Code Card -->
+        <div class="floating-code-card">
+          <div class="card-titlebar">
+            <span class="code-tag">&lt;/&gt; Code</span>
+            <span class="dot-online"></span>
+          </div>
+          <pre><code><span class="c-kw">const</span> developer = {
+  name: <span class="c-str">"{{ .Portfolio.Profile.Name }}"</span>,
+  role: <span class="c-str">"{{ .Portfolio.Profile.Title }}"</span>,
+  status: <span class="c-str">"{{ .Portfolio.Profile.Availability }}"</span>
+};</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
 
-                {{ if .Image }}
-                <div class="certificate-image">
-                    <img
-                        src="{{ .Image }}"
-                        alt="{{ .Title }} certificate"
-                        loading="lazy"
-                    >
-                </div>
-                {{ end }}
+  <!-- About & Stats Section -->
+  <section id="about" class="about-section">
+    <div class="container about-grid">
+      <div class="about-left">
+        <div class="pill-badge">ABOUT ME</div>
+        <h2>I'm passionate about creating digital solutions</h2>
+        <p>{{ .Portfolio.Profile.Bio }}</p>
+        <div class="about-meta">
+          <p>📍 <strong>Location:</strong> {{ .Portfolio.Profile.Location }}</p>
+          <p>⚡ <strong>Availability:</strong> {{ .Portfolio.Profile.Availability }}</p>
+        </div>
+      </div>
 
-                <div class="certificate-content">
+      <div class="stats-grid">
+        {{ range .Portfolio.Statistics }}
+        <div class="stat-box">
+          <div class="stat-icon-wrapper">
+            <span class="stat-icon">★</span>
+          </div>
+          <div>
+            <h3>{{ .Value }}</h3>
+            <p>{{ .Label }}</p>
+          </div>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </section>
 
-                    <h3>
-                        {{ .Title }}
-                    </h3>
+  <!-- Skills Section -->
+  {{ if .Portfolio.Skills }}
+  <section id="skills" class="skills-section">
+    <div class="container">
+      <div class="section-center-head">
+        <span class="pill-badge">MY SKILLS</span>
+        <h2>Technologies I Master</h2>
+      </div>
 
-                    <p class="certificate-issuer">
-                        {{ .Issuer }}
-                    </p>
+      <div class="skills-3col">
+        {{ range $index, $skill := .Portfolio.Skills }}
+        <div class="skill-row-card color-scheme-{{ $index }}">
+          <div class="skill-info">
+            <span class="skill-name">{{ $skill.Name }}</span>
+            <span class="skill-perc">{{ $skill.Proficiency }}%</span>
+          </div>
+          <div class="skill-track">
+            <div class="skill-fill" style="width: {{ $skill.Proficiency }}%;"></div>
+          </div>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </section>
+  {{ end }}
 
-                    <p>
-                        {{ .Description }}
-                    </p>
+  <!-- Featured Projects Section -->
+  <section id="projects" class="projects-section">
+    <div class="container">
+      <div class="section-center-head">
+        <span class="pill-badge">FEATURED PROJECTS</span>
+        <h2>Some of My Recent Work</h2>
+      </div>
 
-                    <p class="certificate-date">
-                        Issued: {{ .IssueDate }}
-                    </p>
+      <div class="projects-grid-3">
+        {{ range $index, $proj := .Portfolio.Projects }}
+        <article class="project-showcase-card">
+          <div class="proj-card-top">
+            <span class="proj-num">0{{ $index }}</span>
+          </div>
+          {{ if $proj.Image }}
+          <div class="proj-img-wrap">
+            <img
+              src="{{ $proj.Image }}"
+              alt="{{ $proj.Name }}"
+              loading="lazy"
+            />
+          </div>
+          {{ end }}
+          <div class="proj-body">
+            <h3>{{ $proj.Name }}</h3>
+            <p>{{ $proj.Description }}</p>
 
-                    {{ if .CredentialID }}
-                    <p class="certificate-id">
-                        Credential ID: {{ .CredentialID }}
-                    </p>
-                    {{ end }}
-
-                    {{ if .VerificationURL }}
-                    <a
-                        href="{{ .VerificationURL }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="button button-secondary"
-                    >
-                        Verify Certificate
-                    </a>
-                    {{ end }}
-
-                </div>
-
-            </article>
-
+            {{ if $proj.Technologies }}
+            <div class="proj-techs">
+              {{ range $proj.Technologies }}
+              <span class="badge-tech">{{ . }}</span>
+              {{ end }}
+            </div>
             {{ end }}
 
-        </div>
-
+            <div class="proj-links">
+              {{ if $proj.URL }}
+              <a
+                href="{{ $proj.URL }}"
+                target="_blank"
+                rel="noopener"
+                class="link-arrow"
+                >View Project ↗</a
+              >
+              {{ end }}
+              {{ if $proj.GitHub }}
+              <a
+                href="{{ $proj.GitHub }}"
+                target="_blank"
+                rel="noopener"
+                class="link-arrow"
+                >Source Code ↗</a
+              >
+              {{ end }}
+            </div>
+          </div>
+        </article>
+        {{ else }}
+        <p class="empty-text">No projects added yet.</p>
+        {{ end }}
+      </div>
     </div>
-    </section>
+  </section>
 
-    <!-- Projects -->
-    <section id="projects" class="section">
-        ...
-    </section>
+  <!-- Certificates Section -->
+  {{ if .Portfolio.Certificates }}
+  <section id="certificates" class="skills-section">
+    <div class="container">
+      <div class="section-center-head">
+        <span class="pill-badge">CREDENTIALS</span>
+        <h2>Certifications &amp; Licenses</h2>
+      </div>
 
-    <!-- Contact -->
-    <section id="contact" class="section contact">
-        ...
-    </section>
+      <div class="certificates-grid">
+        {{ range .Portfolio.Certificates }}
+        <div class="certificate-card">
+          {{ if .Image }}
+          <div class="cert-image-wrapper" onclick="openCertModal('{{ .Image }}', '{{ .Title }}', '{{ .Issuer }}')">
+            <img
+              src="{{ .Image }}"
+              alt="{{ .Title }}"
+              class="cert-img"
+              loading="lazy"
+            />
+            <div class="cert-zoom-overlay">
+              <span>🔍 Expand</span>
+            </div>
+          </div>
+          {{ end }}
 
-    <!-- Footer -->
-    <footer class="client-footer">
-        ...
-    </footer>
+          <div class="cert-details">
+            <div class="cert-meta">
+              <span class="cert-issuer">{{ .Issuer }}</span>
+              {{ if .IssueDate }}
+              <span class="cert-date">{{ .IssueDate }}</span>
+              {{ end }}
+            </div>
 
+            <h3 class="cert-title">{{ .Title }}</h3>
+
+            {{ if .Description }}
+            <p class="cert-description">{{ .Description }}</p>
+            {{ end }}
+
+            <div class="cert-footer">
+              {{ if .VerificationURL }}
+              <a
+                href="{{ .VerificationURL }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="cert-link"
+              >
+                Verify Credential ↗
+              </a>
+              {{ end }}
+
+              {{ if .CredentialID }}
+              <span class="cert-id" title="Credential ID">ID: {{ .CredentialID }}</span>
+              {{ end }}
+            </div>
+          </div>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </section>
+
+  <!-- Certificate Lightbox Modal -->
+  <div id="cert-lightbox-modal" class="cert-modal" onclick="closeCertModal(event)">
+    <div class="cert-modal-dialog">
+      <button class="cert-modal-close" onclick="closeCertModalDirect()">&times;</button>
+      <div class="cert-modal-body">
+        <img id="cert-modal-img" src="" alt="Certificate Preview" />
+      </div>
+      <div class="cert-modal-caption">
+        <h4 id="cert-modal-title"></h4>
+        <p id="cert-modal-issuer"></p>
+      </div>
+    </div>
+  </div>
+  {{ end }}
+
+  <!-- Bottom Contact & Social Footer -->
+  <footer id="contact" class="footer-wrapper">
+    <div class="container footer-grid-3">
+      <div class="footer-col-1">
+        <span class="pill-badge">LET'S WORK TOGETHER</span>
+        <h2>Have a project in mind?</h2>
+        <p>
+          I'm always open to discuss new projects, creative ideas or
+          opportunities to be part of your vision.
+        </p>
+        {{ if .Portfolio.Contact.Phone }}
+        <a 
+          href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }},%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20get%20in%20touch%20regarding%20a%20project!" 
+          class="btn btn-primary"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Get In Touch 💬
+        </a>
+        {{ else }}
+        <a href="mailto:{{ .Portfolio.Contact.Email }}" class="btn btn-primary">
+          Get In Touch ↗
+        </a>
+        {{ end }}
+      </div>
+
+      <div class="footer-col-2">
+        <div class="quote-card">
+          <span class="quote-icon">“</span>
+          <p class="quote-text">{{ .Portfolio.Profile.Bio }}</p>
+          <div class="quote-author">
+            <strong>{{ .Portfolio.Profile.Name }}</strong>
+            <span>{{ .Portfolio.Profile.Title }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-col-3">
+        <span class="footer-label">CONTACT & SOCIAL</span>
+        <p class="contact-line">
+          ✉
+          <a href="mailto:{{ .Portfolio.Contact.Email }}">{{ .Portfolio.Contact.Email }}</a>
+        </p>
+        {{ if .Portfolio.Contact.Phone }}
+        <p class="contact-line">
+          💬
+          <a href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }}!" target="_blank" rel="noopener noreferrer">
+            {{ .Portfolio.Contact.Phone }} (WhatsApp)
+          </a>
+        </p>
+        {{ end }}
+        <p class="contact-line">📍 {{ .Portfolio.Contact.Location }}</p>
+
+        {{ if .Portfolio.SocialLinks }}
+        <div class="social-pills">
+          {{ range .Portfolio.SocialLinks }}
+          <a href="{{ .URL }}" target="_blank" rel="noopener" class="soc-icon">{{ .Platform }}</a>
+          {{ end }}
+        </div>
+        {{ end }}
+      </div>
+    </div>
+
+    <div class="container sub-footer">
+      <p>&copy; {{ .Portfolio.Profile.Name }}. All rights reserved.</p>
+      <p>Made with ❤️ by {{ .Portfolio.Profile.Name }}</p>
+    </div>
+  </footer>
 </section>
-
 {{ end }}

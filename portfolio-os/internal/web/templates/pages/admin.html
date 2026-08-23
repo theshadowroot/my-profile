@@ -31,6 +31,33 @@
     </article>
   </section>
 
+  <!-- Resume Management -->
+  <section class="analytics-card admin-section">
+    <header>
+      <h2>Resume</h2>
+      <p>Upload and securely download your current resume.</p>
+    </header>
+
+    <form method="POST" action="/admin/resume" enctype="multipart/form-data">
+      <div class="admin-form-group">
+        <label for="resume">Resume PDF</label>
+        <input
+          type="file"
+          id="resume"
+          name="resume"
+          accept="application/pdf"
+          required
+        />
+      </div>
+
+      <button type="submit">Upload Resume</button>
+    </form>
+
+    <div class="admin-form-group">
+      <a href="/resume">Download Current Resume</a>
+    </div>
+  </section>
+
   <!-- Profile Management -->
   <section class="analytics-card admin-section">
     <header>
@@ -106,6 +133,92 @@
 
       <button type="submit">Save Profile</button>
     </form>
+  </section>
+
+  <!-- Statistics Management -->
+  <section class="analytics-card admin-section">
+    <header>
+      <h2>Statistics</h2>
+      <p>Add, update, or remove the highlight statistics shown on your portfolio.</p>
+    </header>
+
+    <!-- Add Statistic -->
+    <form method="POST" action="/admin/statistics">
+      <h3>Add Statistic</h3>
+
+      <div class="admin-form-group">
+        <label for="statistic-label">Label</label>
+        <input
+          type="text"
+          id="statistic-label"
+          name="label"
+          placeholder="e.g. Projects"
+          required
+        />
+      </div>
+
+      <div class="admin-form-group">
+        <label for="statistic-value">Value</label>
+        <input
+          type="text"
+          id="statistic-value"
+          name="value"
+          placeholder="e.g. 10+"
+          required
+        />
+      </div>
+
+      <button type="submit">Add Statistic</button>
+    </form>
+
+    <!-- Existing Statistics -->
+    <div class="existing-statistics">
+      <h3>Existing Statistics</h3>
+
+      {{ range $index, $statistic := .Statistics }}
+
+      <div class="statistic-editor">
+        <form method="POST" action="/admin/statistics/{{ $index }}">
+          <h4>Statistic {{ $index }}</h4>
+
+          <div class="admin-form-group">
+            <label>Label</label>
+            <input
+              type="text"
+              name="label"
+              value="{{ $statistic.Label }}"
+              required
+            />
+          </div>
+
+          <div class="admin-form-group">
+            <label>Value</label>
+            <input
+              type="text"
+              name="value"
+              value="{{ $statistic.Value }}"
+              required
+            />
+          </div>
+
+          <button type="submit">Update Statistic</button>
+        </form>
+
+        <form
+          method="POST"
+          action="/admin/statistics/{{ $index }}/delete"
+          onsubmit="return confirm('Delete this statistic?')"
+        >
+          <button type="submit" class="admin-delete">Delete</button>
+        </form>
+      </div>
+
+      {{ else }}
+
+      <p>No statistics added yet.</p>
+
+      {{ end }}
+    </div>
   </section>
 
   <!-- Skills Management -->
