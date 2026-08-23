@@ -143,17 +143,17 @@
     ],
     "projects": [
         {
-            "name": "",
+            "name": "My Portfolio",
             "description": "Dynamic real-time price estimation engine and marketplace module constructed with Golang and JavaScript for item listing, community comments, and engagement tracking.",
-            "image": "/static/images/project-ecommerce.jpg",
-            "url": "",
-            "github": "",
+            "image": "https://github.com/Tena-byte/my-profile/blob/main/portfolio-os/internal/web/static/images/mypage.png",
+            "url": "https://terna-kpensalen.onrender.com/",
+            "github": "https://github.com/Tena-byte/my-profile",
             "technologies": [
                 "Golang",
                 "JavaScript",
                 "HTML",
                 "CSS",
-                "REST API"
+                "Json API"
             ]
         },
         {
