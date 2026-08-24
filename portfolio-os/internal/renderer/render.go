@@ -27,14 +27,19 @@ func New(files fs.FS) (*Renderer, error) {
 	}
 
 	for name, page := range basePages {
-		tmpl, err := template.New("").Funcs(funcs).ParseFS(
+		tmpl, err := template.New(name).Funcs(funcs).ParseFS(
 			files,
 			"templates/layouts/base.html",
 			page,
 			"templates/partials/*.html",
 		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse template %s (%s): %w", name, page, err)
+			return nil, fmt.Errorf(
+				"failed to parse template %s (%s): %w",
+				name,
+				page,
+				err,
+			)
 		}
 
 		templates[name] = tmpl
@@ -46,9 +51,16 @@ func New(files fs.FS) (*Renderer, error) {
 	}
 
 	for name, page := range standalonePages {
-		tmpl, err := template.New("").Funcs(funcs).ParseFS(files, page)
+		tmpl, err := template.New(name).Funcs(funcs).ParseFS(
+			files,
+			page,
+		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse standalone template %s: %w", name, err)
+			return nil, fmt.Errorf(
+				"failed to parse standalone template %s: %w",
+				name,
+				err,
+			)
 		}
 
 		templates[name] = tmpl
@@ -72,6 +84,7 @@ func (r *Renderer) Render(
 	switch name {
 	case "admin", "admin-login":
 		return tmpl.ExecuteTemplate(w, name, data)
+
 	default:
 		return tmpl.ExecuteTemplate(w, "base", data)
 	}

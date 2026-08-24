@@ -68,7 +68,6 @@
     <form method="POST" action="/admin/profile">
       <div class="admin-form-group">
         <label for="name">Name</label>
-
         <input
           type="text"
           id="name"
@@ -80,7 +79,6 @@
 
       <div class="admin-form-group">
         <label for="title">Professional Title</label>
-
         <input
           type="text"
           id="title"
@@ -92,15 +90,11 @@
 
       <div class="admin-form-group">
         <label for="bio">Bio</label>
-
-        <textarea id="bio" name="bio" rows="6" required>
-{{ .Profile.Bio }}</textarea
-        >
+        <textarea id="bio" name="bio" rows="6" required>{{ .Profile.Bio }}</textarea>
       </div>
 
       <div class="admin-form-group">
         <label for="location">Location</label>
-
         <input
           type="text"
           id="location"
@@ -111,7 +105,6 @@
 
       <div class="admin-form-group">
         <label for="profile_image">Profile Image</label>
-
         <input
           type="text"
           id="profile_image"
@@ -122,7 +115,6 @@
 
       <div class="admin-form-group">
         <label for="availability">Availability</label>
-
         <input
           type="text"
           id="availability"
@@ -139,10 +131,12 @@
   <section class="analytics-card admin-section">
     <header>
       <h2>Statistics</h2>
-      <p>Add, update, or remove the highlight statistics shown on your portfolio.</p>
+      <p>
+        Add, update, or remove the highlight statistics shown on your
+        portfolio.
+      </p>
     </header>
 
-    <!-- Add Statistic -->
     <form method="POST" action="/admin/statistics">
       <h3>Add Statistic</h3>
 
@@ -171,7 +165,6 @@
       <button type="submit">Add Statistic</button>
     </form>
 
-    <!-- Existing Statistics -->
     <div class="existing-statistics">
       <h3>Existing Statistics</h3>
 
@@ -228,7 +221,6 @@
       <p>Add, update, or remove the skills shown on your portfolio.</p>
     </header>
 
-    <!-- Add Skill -->
     <form method="POST" action="/admin/skills">
       <h3>Add Skill</h3>
 
@@ -262,7 +254,6 @@
       <button type="submit">Add Skill</button>
     </form>
 
-    <!-- Existing Skills -->
     <div class="existing-skills">
       <h3>Existing Skills</h3>
 
@@ -284,7 +275,11 @@
 
           <div class="admin-form-group">
             <label>Category</label>
-            <input type="text" name="category" value="{{ $skill.Category }}" />
+            <input
+              type="text"
+              name="category"
+              value="{{ $skill.Category }}"
+            />
           </div>
 
           <div class="admin-form-group">
@@ -326,7 +321,6 @@
       <p>Add, update, or remove the services shown on your portfolio.</p>
     </header>
 
-    <!-- Add Service -->
     <form method="POST" action="/admin/services">
       <h3>Add Service</h3>
 
@@ -358,7 +352,6 @@
       <button type="submit">Add Service</button>
     </form>
 
-    <!-- Existing Services -->
     <div class="existing-services">
       <h3>Existing Services</h3>
 
@@ -423,7 +416,6 @@
       <p>Add, update, or remove your education history.</p>
     </header>
 
-    <!-- Add Education -->
     <form method="POST" action="/admin/education">
       <h3>Add Education</h3>
 
@@ -439,7 +431,12 @@
 
       <div class="admin-form-group">
         <label for="education-degree">Degree</label>
-        <input type="text" id="education-degree" name="degree" required />
+        <input
+          type="text"
+          id="education-degree"
+          name="degree"
+          required
+        />
       </div>
 
       <div class="admin-form-group">
@@ -488,7 +485,6 @@
       <button type="submit">Add Education</button>
     </form>
 
-    <!-- Existing Education -->
     <div class="existing-education">
       <h3>Existing Education</h3>
 
@@ -520,7 +516,11 @@
 
           <div class="admin-form-group">
             <label>Field of Study</label>
-            <input type="text" name="field" value="{{ $education.Field }}" />
+            <input
+              type="text"
+              name="field"
+              value="{{ $education.Field }}"
+            />
           </div>
 
           <div class="admin-form-group">
@@ -582,12 +582,21 @@
     </header>
 
     <!-- Add Project -->
-    <form method="POST" action="/admin/projects">
+    <form
+      method="POST"
+      action="/admin/projects"
+      enctype="multipart/form-data"
+    >
       <h3>Add Project</h3>
 
       <div class="admin-form-group">
         <label for="project-name">Name</label>
-        <input type="text" id="project-name" name="name" required />
+        <input
+          type="text"
+          id="project-name"
+          name="name"
+          required
+        />
       </div>
 
       <div class="admin-form-group">
@@ -601,18 +610,36 @@
       </div>
 
       <div class="admin-form-group">
-        <label for="project-image">Image URL</label>
-        <input type="url" id="project-image" name="image" />
+        <label for="project-image">Project Image</label>
+        <input
+          type="file"
+          id="project-image"
+          name="image"
+          accept="image/jpeg,image/png,image/webp"
+        />
+        <small>
+          Upload a JPG, PNG, or WebP image. Maximum size: 10MB.
+        </small>
       </div>
 
       <div class="admin-form-group">
         <label for="project-url">Project URL</label>
-        <input type="url" id="project-url" name="url" />
+        <input
+          type="url"
+          id="project-url"
+          name="url"
+          placeholder="https://example.com"
+        />
       </div>
 
       <div class="admin-form-group">
         <label for="project-github">GitHub URL</label>
-        <input type="url" id="project-github" name="github" />
+        <input
+          type="url"
+          id="project-github"
+          name="github"
+          placeholder="https://github.com/username/project"
+        />
       </div>
 
       <div class="admin-form-group">
@@ -635,7 +662,11 @@
       {{ range $index, $project := .Projects }}
 
       <div class="project-editor">
-        <form method="POST" action="/admin/projects/{{ $index }}">
+        <form
+          method="POST"
+          action="/admin/projects/{{ $index }}"
+          enctype="multipart/form-data"
+        >
           <h4>Project {{ $index }}</h4>
 
           <div class="admin-form-group">
@@ -658,12 +689,38 @@
           </div>
 
           <div class="admin-form-group">
-            <label>Image URL</label>
+            <label>Project Image</label>
+
+            {{ if $project.Image }}
+            <div class="current-project-image">
+              <img
+                src="{{ $project.Image }}"
+                alt="{{ $project.Name }}"
+                style="max-width: 220px; height: auto; border-radius: 8px; display: block; margin-bottom: 10px;"
+              />
+
+              <p>
+                Current image:
+                <a
+                  href="{{ $project.Image }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View
+                </a>
+              </p>
+            </div>
+            {{ end }}
+
             <input
-              type="url"
+              type="file"
               name="image"
-              value="{{ $project.Image }}"
+              accept="image/jpeg,image/png,image/webp"
             />
+
+            <small>
+              Leave empty to keep the current image.
+            </small>
           </div>
 
           <div class="admin-form-group">
@@ -730,8 +787,6 @@
 
       <div class="admin-form-group">
         <label for="certificate-title">Title</label>
-
-
         <input
           type="text"
           id="certificate-title"
@@ -741,20 +796,23 @@
       </div>
 
       <div class="admin-form-group">
-        <label>Certificate Image</label>
-
+        <label for="certificate-image">Certificate Image</label>
         <input
           type="file"
+          id="certificate-image"
           name="image"
           accept="image/jpeg,image/png,image/webp"
         />
-
-        
       </div>
 
       <div class="admin-form-group">
         <label for="certificate-issuer">Issuer</label>
-        <input type="text" id="certificate-issuer" name="issuer" required />
+        <input
+          type="text"
+          id="certificate-issuer"
+          name="issuer"
+          required
+        />
       </div>
 
       <div class="admin-form-group">
@@ -769,7 +827,11 @@
 
       <div class="admin-form-group">
         <label for="certificate-id">Credential ID</label>
-        <input type="text" id="certificate-id" name="credential_id" />
+        <input
+          type="text"
+          id="certificate-id"
+          name="credential_id"
+        />
       </div>
 
       <div class="admin-form-group">
@@ -794,7 +856,6 @@
       <button type="submit">Add Certificate</button>
     </form>
 
-    <!-- Existing Certificates -->
     <!-- Existing Certificates -->
     <div class="existing-certificates">
       <h3>Existing Certificates</h3>
@@ -849,13 +910,27 @@
 
         <div class="admin-form-group">
           <label>Description</label>
-          <textarea name="description" rows="5">
-{{ $certificate.Description }}</textarea
-          >
+          <textarea
+            name="description"
+            rows="5"
+          >{{ $certificate.Description }}</textarea>
         </div>
 
         <div class="admin-form-group">
           <label>Certificate Image</label>
+
+          {{ if $certificate.Image }}
+          <p>
+            Current image:
+            <a
+              href="{{ $certificate.Image }}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View
+            </a>
+          </p>
+          {{ end }}
 
           <input
             type="file"
@@ -863,12 +938,9 @@
             accept="image/jpeg,image/png,image/webp"
           />
 
-          {{ if $certificate.Image }}
-          <p>
-            Current image:
-            <a href="{{ $certificate.Image }}" target="_blank"> View </a>
-          </p>
-          {{ end }}
+          <small>
+            Leave empty to keep the current image.
+          </small>
         </div>
 
         <div class="admin-form-group">
@@ -889,7 +961,9 @@
         onsubmit="return confirm('Delete this certificate?')"
         class="certificate-delete"
       >
-        <button type="submit" class="admin-delete">Delete Certificate</button>
+        <button type="submit" class="admin-delete">
+          Delete Certificate
+        </button>
       </form>
 
       {{ else }}
@@ -900,6 +974,7 @@
     </div>
   </section>
 
+  <!-- Contact Management -->
   <section class="analytics-card admin-section">
     <header>
       <h2>Contact</h2>
@@ -909,7 +984,6 @@
     <form method="POST" action="/admin/contact">
       <div class="admin-form-group">
         <label for="contact_email">Email</label>
-
         <input
           type="email"
           id="contact_email"
@@ -921,7 +995,6 @@
 
       <div class="admin-form-group">
         <label for="contact_phone">Phone</label>
-
         <input
           type="tel"
           id="contact_phone"
@@ -932,7 +1005,6 @@
 
       <div class="admin-form-group">
         <label for="contact_location">Location</label>
-
         <input
           type="text"
           id="contact_location"
@@ -945,13 +1017,13 @@
     </form>
   </section>
 
+  <!-- Social Links Management -->
   <section class="analytics-card admin-section">
     <header>
       <h2>Social Links</h2>
       <p>Add, update, or remove the social links shown on your portfolio.</p>
     </header>
 
-    <!-- Add Social Link -->
     <form method="POST" action="/admin/social-links">
       <h3>Add Social Link</h3>
 
@@ -990,7 +1062,6 @@
       <button type="submit">Add Social Link</button>
     </form>
 
-    <!-- Existing Social Links -->
     <div class="existing-social-links">
       <h3>Existing Social Links</h3>
 
@@ -1012,12 +1083,21 @@
 
           <div class="admin-form-group">
             <label>URL</label>
-            <input type="url" name="url" value="{{ $link.URL }}" required />
+            <input
+              type="url"
+              name="url"
+              value="{{ $link.URL }}"
+              required
+            />
           </div>
 
           <div class="admin-form-group">
             <label>Username</label>
-            <input type="text" name="username" value="{{ $link.Username }}" />
+            <input
+              type="text"
+              name="username"
+              value="{{ $link.Username }}"
+            />
           </div>
 
           <button type="submit">Update Social Link</button>

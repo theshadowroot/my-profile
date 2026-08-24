@@ -825,7 +825,6 @@ func (h *AdminHandler) DeleteEducation(
 }
 
 func (h *AdminHandler) AddProject(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -839,6 +838,18 @@ func (h *AdminHandler) AddProject(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+
+	imageURL, err := saveProjectImage(r)
+	if err != nil {
+		http.Error(
+			w,
+			"failed to upload project image: "+err.Error(),
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	project.Image = imageURL
 
 	if err := h.PortfolioService.AddProject(project); err != nil {
 		http.Error(
@@ -878,9 +889,36 @@ func (h *AdminHandler) UpdateProject(
 		return
 	}
 
+	currentPortfolio := h.PortfolioService.GetPortfolio()
+
+	if index < 0 || index >= len(currentPortfolio.Projects) {
+		http.Error(
+			w,
+			"invalid project index",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
 	project, ok := parseProjectForm(w, r)
 	if !ok {
 		return
+	}
+
+	project.Image = currentPortfolio.Projects[index].Image
+
+	imageURL, err := saveProjectImage(r)
+	if err != nil {
+		http.Error(
+			w,
+			"failed to upload project image: "+err.Error(),
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if imageURL != "" {
+		project.Image = imageURL
 	}
 
 	if err := h.PortfolioService.UpdateProject(index, project); err != nil {
@@ -1212,7 +1250,6 @@ func parseProjectForm(
 	return models.Project{
 		Name:         name,
 		Description:  description,
-		Image:        r.FormValue("image"),
 		URL:          r.FormValue("url"),
 		GitHub:       r.FormValue("github"),
 		Technologies: technologies,
@@ -1338,6 +1375,79 @@ func saveCertificateImage(r *http.Request) (string, error) {
 	}
 
 	return "/uploads/certificates/" + filename, nil
+}
+
+func saveProjectImage(r *http.Request) (string, error) {
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		return "", fmt.Errorf("failed to parse upload: %w", err)
+	}
+
+	file, header, err := r.FormFile("image")
+	if err != nil {
+		if err == http.ErrMissingFile {
+			return "", nil
+		}
+
+		return "", fmt.Errorf("failed to read image: %w", err)
+	}
+	defer file.Close()
+
+	if header.Size > 10<<20 {
+		return "", fmt.Errorf("image is too large; maximum size is 10MB")
+	}
+
+	buffer := make([]byte, 512)
+
+	n, err := file.Read(buffer)
+	if err != nil && err != io.EOF {
+		return "", fmt.Errorf("failed to inspect image: %w", err)
+	}
+
+	contentType := http.DetectContentType(buffer[:n])
+
+	extensions := map[string]string{
+		"image/jpeg": ".jpg",
+		"image/png":  ".png",
+		"image/webp": ".webp",
+	}
+
+	extension, ok := extensions[contentType]
+	if !ok {
+		return "", fmt.Errorf("unsupported image type: %s", contentType)
+	}
+
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return "", fmt.Errorf("failed to reset image: %w", err)
+	}
+
+	if err := os.MkdirAll("uploads/projects", 0755); err != nil {
+		return "", fmt.Errorf("failed to create upload directory: %w", err)
+	}
+
+	imageID, err := services.GenerateVisitID()
+	if err != nil {
+		return "", fmt.Errorf("failed to generate image ID: %w", err)
+	}
+
+	filename := imageID + extension
+
+	path := filepath.Join(
+		"uploads",
+		"projects",
+		filename,
+	)
+
+	output, err := os.Create(path)
+	if err != nil {
+		return "", fmt.Errorf("failed to create image: %w", err)
+	}
+	defer output.Close()
+
+	if _, err := io.Copy(output, file); err != nil {
+		return "", fmt.Errorf("failed to save image: %w", err)
+	}
+
+	return "/uploads/projects/" + filename, nil
 }
 
 func saveResume(r *http.Request) error {

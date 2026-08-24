@@ -79,8 +79,11 @@ func main() {
 	// Admin CRUD Routes
 	mux.Handle("GET /admin", middleware.AdminAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 		if err := renderer.Render(w, "admin", portfolioService.GetPortfolio()); err != nil {
+			log.Printf("admin render error: %v", err)
 			http.Error(w, "Failed to render admin page", http.StatusInternalServerError)
+			return
 		}
 	})))
 
