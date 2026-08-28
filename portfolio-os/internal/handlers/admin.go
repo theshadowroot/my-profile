@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"portfolio-os/internal/models"
 	"portfolio-os/internal/services"
 	"strconv"
@@ -16,7 +15,9 @@ type AdminHandler struct {
 	Renderer interface {
 		Render(http.ResponseWriter, string, any) error
 	}
-	PortfolioService *services.PortfolioService
+
+	PortfolioService  *services.PortfolioService
+	CloudinaryService *services.CloudinaryService
 }
 
 func NewAdminHandler(
@@ -24,15 +25,16 @@ func NewAdminHandler(
 		Render(http.ResponseWriter, string, any) error
 	},
 	portfolioService *services.PortfolioService,
+	cloudinaryService *services.CloudinaryService,
 ) *AdminHandler {
 	return &AdminHandler{
-		Renderer:         renderer,
-		PortfolioService: portfolioService,
+		Renderer:          renderer,
+		PortfolioService:  portfolioService,
+		CloudinaryService: cloudinaryService,
 	}
 }
 
 func (h *AdminHandler) Login(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method == http.MethodGet {
 		if err := h.Renderer.Render(w, "admin-login", nil); err != nil {
 			http.Error(
@@ -65,10 +67,10 @@ func (h *AdminHandler) Login(w http.ResponseWriter, r *http.Request) {
 	})
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) Logout(w http.ResponseWriter, r *http.Request) {
-
 	http.SetCookie(w, &http.Cookie{
 		Name:     "admin_session",
 		Value:    "",
@@ -80,6 +82,7 @@ func (h *AdminHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	})
 
 	http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) UploadResume(
@@ -105,6 +108,7 @@ func (h *AdminHandler) UploadResume(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) DownloadResume(
@@ -151,10 +155,13 @@ func (h *AdminHandler) DownloadResume(
 	)
 
 	http.ServeFile(w, r, resumePath)
+
 }
 
-func (h *AdminHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
-
+func (h *AdminHandler) UpdateProfile(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -183,10 +190,13 @@ func (h *AdminHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
-func (h *AdminHandler) AddCertificate(w http.ResponseWriter, r *http.Request) {
-
+func (h *AdminHandler) AddCertificate(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -196,7 +206,7 @@ func (h *AdminHandler) AddCertificate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imageURL, err := saveCertificateImage(r)
+	imageURL, err := h.saveCertificateImage(r)
 	if err != nil {
 		http.Error(
 			w,
@@ -235,6 +245,7 @@ func (h *AdminHandler) AddCertificate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) UpdateCertificate(
@@ -252,9 +263,8 @@ func (h *AdminHandler) UpdateCertificate(
 
 	indexStr := r.PathValue("index")
 
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(indexStr)
+	if err != nil {
 		http.Error(
 			w,
 			"invalid certificate index",
@@ -276,7 +286,7 @@ func (h *AdminHandler) UpdateCertificate(
 
 	currentCertificate := currentPortfolio.Certificates[index]
 
-	imageURL, err := saveCertificateImage(r)
+	imageURL, err := h.saveCertificateImage(r)
 	if err != nil {
 		http.Error(
 			w,
@@ -286,7 +296,6 @@ func (h *AdminHandler) UpdateCertificate(
 		return
 	}
 
-	// Keep the existing image if no new image was uploaded.
 	if imageURL == "" {
 		imageURL = currentCertificate.Image
 	}
@@ -328,6 +337,7 @@ func (h *AdminHandler) UpdateCertificate(
 		"/admin",
 		http.StatusSeeOther,
 	)
+
 }
 
 func (h *AdminHandler) DeleteCertificate(
@@ -343,11 +353,8 @@ func (h *AdminHandler) DeleteCertificate(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid certificate index",
@@ -366,10 +373,13 @@ func (h *AdminHandler) DeleteCertificate(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
-func (h *AdminHandler) AddSkill(w http.ResponseWriter, r *http.Request) {
-
+func (h *AdminHandler) AddSkill(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -394,6 +404,7 @@ func (h *AdminHandler) AddSkill(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) UpdateSkill(
@@ -409,11 +420,8 @@ func (h *AdminHandler) UpdateSkill(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid skill index",
@@ -437,6 +445,7 @@ func (h *AdminHandler) UpdateSkill(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) DeleteSkill(
@@ -452,11 +461,8 @@ func (h *AdminHandler) DeleteSkill(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid skill index",
@@ -475,10 +481,13 @@ func (h *AdminHandler) DeleteSkill(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
-func (h *AdminHandler) AddStatistic(w http.ResponseWriter, r *http.Request) {
-
+func (h *AdminHandler) AddStatistic(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -503,6 +512,7 @@ func (h *AdminHandler) AddStatistic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) UpdateStatistic(
@@ -518,11 +528,8 @@ func (h *AdminHandler) UpdateStatistic(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid statistic index",
@@ -546,6 +553,7 @@ func (h *AdminHandler) UpdateStatistic(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) DeleteStatistic(
@@ -561,11 +569,8 @@ func (h *AdminHandler) DeleteStatistic(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid statistic index",
@@ -584,10 +589,13 @@ func (h *AdminHandler) DeleteStatistic(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
-func (h *AdminHandler) AddService(w http.ResponseWriter, r *http.Request) {
-
+func (h *AdminHandler) AddService(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -622,6 +630,7 @@ func (h *AdminHandler) AddService(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) UpdateService(
@@ -637,11 +646,8 @@ func (h *AdminHandler) UpdateService(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid service index",
@@ -675,6 +681,7 @@ func (h *AdminHandler) UpdateService(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) DeleteService(
@@ -690,11 +697,8 @@ func (h *AdminHandler) DeleteService(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid service index",
@@ -713,10 +717,13 @@ func (h *AdminHandler) DeleteService(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
-func (h *AdminHandler) AddEducation(w http.ResponseWriter, r *http.Request) {
-
+func (h *AdminHandler) AddEducation(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -741,6 +748,7 @@ func (h *AdminHandler) AddEducation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) UpdateEducation(
@@ -756,11 +764,8 @@ func (h *AdminHandler) UpdateEducation(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid education index",
@@ -784,6 +789,7 @@ func (h *AdminHandler) UpdateEducation(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) DeleteEducation(
@@ -799,11 +805,8 @@ func (h *AdminHandler) DeleteEducation(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid education index",
@@ -822,9 +825,13 @@ func (h *AdminHandler) DeleteEducation(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
-func (h *AdminHandler) AddProject(w http.ResponseWriter, r *http.Request) {
+func (h *AdminHandler) AddProject(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -839,7 +846,7 @@ func (h *AdminHandler) AddProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imageURL, err := saveProjectImage(r)
+	imageURL, err := h.saveProjectImage(r)
 	if err != nil {
 		http.Error(
 			w,
@@ -861,6 +868,7 @@ func (h *AdminHandler) AddProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) UpdateProject(
@@ -876,11 +884,8 @@ func (h *AdminHandler) UpdateProject(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid project index",
@@ -894,8 +899,8 @@ func (h *AdminHandler) UpdateProject(
 	if index < 0 || index >= len(currentPortfolio.Projects) {
 		http.Error(
 			w,
-			"invalid project index",
-			http.StatusBadRequest,
+			"project not found",
+			http.StatusNotFound,
 		)
 		return
 	}
@@ -907,7 +912,7 @@ func (h *AdminHandler) UpdateProject(
 
 	project.Image = currentPortfolio.Projects[index].Image
 
-	imageURL, err := saveProjectImage(r)
+	imageURL, err := h.saveProjectImage(r)
 	if err != nil {
 		http.Error(
 			w,
@@ -931,6 +936,7 @@ func (h *AdminHandler) UpdateProject(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) DeleteProject(
@@ -946,11 +952,8 @@ func (h *AdminHandler) DeleteProject(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid project index",
@@ -969,10 +972,13 @@ func (h *AdminHandler) DeleteProject(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
-func (h *AdminHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
-
+func (h *AdminHandler) UpdateContact(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -998,10 +1004,13 @@ func (h *AdminHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
-func (h *AdminHandler) AddSocialLink(w http.ResponseWriter, r *http.Request) {
-
+func (h *AdminHandler) AddSocialLink(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -1026,6 +1035,7 @@ func (h *AdminHandler) AddSocialLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) UpdateSocialLink(
@@ -1041,11 +1051,8 @@ func (h *AdminHandler) UpdateSocialLink(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid social link index",
@@ -1069,6 +1076,7 @@ func (h *AdminHandler) UpdateSocialLink(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
 func (h *AdminHandler) DeleteSocialLink(
@@ -1084,11 +1092,8 @@ func (h *AdminHandler) DeleteSocialLink(
 		return
 	}
 
-	indexStr := r.PathValue("index")
-
-	var index int
-
-	if _, err := fmt.Sscanf(indexStr, "%d", &index); err != nil {
+	index, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
 		http.Error(
 			w,
 			"invalid social link index",
@@ -1107,11 +1112,9 @@ func (h *AdminHandler) DeleteSocialLink(
 	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+
 }
 
-// parseSkillForm builds a Skill from the request form, validating that a name is
-// present and that proficiency is a number between 0 and 100. On failure it writes
-// a 400 response and returns ok == false.
 func parseSkillForm(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -1127,7 +1130,10 @@ func parseSkillForm(
 		return models.Skill{}, false
 	}
 
-	proficiency, err := strconv.Atoi(r.FormValue("proficiency"))
+	proficiency, err := strconv.Atoi(
+		r.FormValue("proficiency"),
+	)
+
 	if err != nil || proficiency < 0 || proficiency > 100 {
 		http.Error(
 			w,
@@ -1142,12 +1148,9 @@ func parseSkillForm(
 		Category:    r.FormValue("category"),
 		Proficiency: proficiency,
 	}, true
+
 }
 
-// parseEducationForm builds an EducationEntry from the request form. Institution and
-// Degree are required; Field and Description are optional. StartYear and EndYear are
-// optional (blank is stored as 0, representing ongoing studies) but, when provided,
-// must be valid years. On failure it writes a 400 response and returns ok == false.
 func parseEducationForm(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -1164,17 +1167,29 @@ func parseEducationForm(
 		return models.EducationEntry{}, false
 	}
 
-	startYear, ok := parseOptionalYear(w, r.FormValue("start_year"), "start year")
+	startYear, ok := parseOptionalYear(
+		w,
+		r.FormValue("start_year"),
+		"start year",
+	)
+
 	if !ok {
 		return models.EducationEntry{}, false
 	}
 
-	endYear, ok := parseOptionalYear(w, r.FormValue("end_year"), "end year")
+	endYear, ok := parseOptionalYear(
+		w,
+		r.FormValue("end_year"),
+		"end year",
+	)
+
 	if !ok {
 		return models.EducationEntry{}, false
 	}
 
-	if startYear != 0 && endYear != 0 && endYear < startYear {
+	if startYear != 0 &&
+		endYear != 0 &&
+		endYear < startYear {
 		http.Error(
 			w,
 			"end year must not be before start year",
@@ -1191,11 +1206,9 @@ func parseEducationForm(
 		EndYear:     endYear,
 		Description: r.FormValue("description"),
 	}, true
+
 }
 
-// parseOptionalYear parses a year form value. A blank value is allowed and returns 0
-// (used to represent an unset or ongoing year). A non-empty value must be an integer
-// within a sensible range.
 func parseOptionalYear(
 	w http.ResponseWriter,
 	value string,
@@ -1206,6 +1219,7 @@ func parseOptionalYear(
 	}
 
 	year, err := strconv.Atoi(value)
+
 	if err != nil || year < 1950 || year > 2100 {
 		http.Error(
 			w,
@@ -1216,12 +1230,9 @@ func parseOptionalYear(
 	}
 
 	return year, true
+
 }
 
-// parseProjectForm builds a Project from the request form. Name and Description are
-// required; Image, URL, and GitHub are optional. Technologies is a comma-separated
-// list, trimmed with empty entries dropped. On failure it writes a 400 response and
-// returns ok == false.
 func parseProjectForm(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -1240,10 +1251,17 @@ func parseProjectForm(
 
 	var technologies []string
 
-	for _, technology := range strings.Split(r.FormValue("technologies"), ",") {
+	for _, technology := range strings.Split(
+		r.FormValue("technologies"),
+		",",
+	) {
 		technology = strings.TrimSpace(technology)
+
 		if technology != "" {
-			technologies = append(technologies, technology)
+			technologies = append(
+				technologies,
+				technology,
+			)
 		}
 	}
 
@@ -1254,11 +1272,9 @@ func parseProjectForm(
 		GitHub:       r.FormValue("github"),
 		Technologies: technologies,
 	}, true
+
 }
 
-// parseSocialLinkForm builds a SocialLink from the request form. Platform and URL are
-// required; Username is optional. On failure it writes a 400 response and returns
-// ok == false.
 func parseSocialLinkForm(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -1280,6 +1296,7 @@ func parseSocialLinkForm(
 		URL:      url,
 		Username: r.FormValue("username"),
 	}, true
+
 }
 
 func parseStatisticForm(
@@ -1302,209 +1319,315 @@ func parseStatisticForm(
 		Label: label,
 		Value: value,
 	}, true
+
 }
 
-func saveCertificateImage(r *http.Request) (string, error) {
+func (h *AdminHandler) saveCertificateImage(
+	r *http.Request,
+) (string, error) {
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		return "", fmt.Errorf("failed to parse upload: %w", err)
+		return "", fmt.Errorf(
+			"failed to parse upload: %w",
+			err,
+		)
 	}
 
 	file, header, err := r.FormFile("image")
+
 	if err != nil {
 		if err == http.ErrMissingFile {
 			return "", nil
 		}
 
-		return "", fmt.Errorf("failed to read image: %w", err)
+		return "", fmt.Errorf(
+			"failed to read image: %w",
+			err,
+		)
 	}
+
 	defer file.Close()
 
 	if header.Size > 10<<20 {
-		return "", fmt.Errorf("image is too large; maximum size is 10MB")
+		return "", fmt.Errorf(
+			"image is too large; maximum size is 10MB",
+		)
 	}
 
 	buffer := make([]byte, 512)
 
 	n, err := file.Read(buffer)
+
 	if err != nil && err != io.EOF {
-		return "", fmt.Errorf("failed to inspect image: %w", err)
+		return "", fmt.Errorf(
+			"failed to inspect image: %w",
+			err,
+		)
 	}
 
-	contentType := http.DetectContentType(buffer[:n])
+	contentType := http.DetectContentType(
+		buffer[:n],
+	)
 
-	extensions := map[string]string{
-		"image/jpeg": ".jpg",
-		"image/png":  ".png",
-		"image/webp": ".webp",
+	allowedTypes := map[string]bool{
+		"image/jpeg": true,
+		"image/png":  true,
+		"image/webp": true,
 	}
 
-	extension, ok := extensions[contentType]
-	if !ok {
-		return "", fmt.Errorf("unsupported image type: %s", contentType)
+	if !allowedTypes[contentType] {
+		return "", fmt.Errorf(
+			"unsupported image type: %s",
+			contentType,
+		)
 	}
 
-	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		return "", fmt.Errorf("failed to reset image: %w", err)
+	if _, err := file.Seek(
+		0,
+		io.SeekStart,
+	); err != nil {
+		return "", fmt.Errorf(
+			"failed to reset image: %w",
+			err,
+		)
 	}
 
-	if err := os.MkdirAll("uploads/certificates", 0755); err != nil {
-		return "", fmt.Errorf("failed to create upload directory: %w", err)
+	if h.CloudinaryService == nil {
+		return "", fmt.Errorf(
+			"Cloudinary service is not configured",
+		)
 	}
 
 	imageID, err := services.GenerateVisitID()
+
 	if err != nil {
-		return "", fmt.Errorf("failed to generate image ID: %w", err)
+		return "", fmt.Errorf(
+			"failed to generate image ID: %w",
+			err,
+		)
 	}
 
-	filename := imageID + extension
+	filename := imageID
 
-	path := filepath.Join(
-		"uploads",
-		"certificates",
+	imageURL, err := h.CloudinaryService.UploadImage(
+		r.Context(),
+		file,
 		filename,
+		"portfolio/certificates",
 	)
 
-	output, err := os.Create(path)
 	if err != nil {
-		return "", fmt.Errorf("failed to create image: %w", err)
-	}
-	defer output.Close()
-
-	if _, err := io.Copy(output, file); err != nil {
-		return "", fmt.Errorf("failed to save image: %w", err)
+		return "", fmt.Errorf(
+			"failed to upload certificate to Cloudinary: %w",
+			err,
+		)
 	}
 
-	return "/uploads/certificates/" + filename, nil
+	return imageURL, nil
+
 }
 
-func saveProjectImage(r *http.Request) (string, error) {
+func (h *AdminHandler) saveProjectImage(
+	r *http.Request,
+) (string, error) {
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		return "", fmt.Errorf("failed to parse upload: %w", err)
+		return "", fmt.Errorf(
+			"failed to parse upload: %w",
+			err,
+		)
 	}
 
 	file, header, err := r.FormFile("image")
+
 	if err != nil {
 		if err == http.ErrMissingFile {
 			return "", nil
 		}
 
-		return "", fmt.Errorf("failed to read image: %w", err)
+		return "", fmt.Errorf(
+			"failed to read image: %w",
+			err,
+		)
 	}
+
 	defer file.Close()
 
 	if header.Size > 10<<20 {
-		return "", fmt.Errorf("image is too large; maximum size is 10MB")
+		return "", fmt.Errorf(
+			"image is too large; maximum size is 10MB",
+		)
 	}
 
 	buffer := make([]byte, 512)
 
 	n, err := file.Read(buffer)
+
 	if err != nil && err != io.EOF {
-		return "", fmt.Errorf("failed to inspect image: %w", err)
+		return "", fmt.Errorf(
+			"failed to inspect image: %w",
+			err,
+		)
 	}
 
-	contentType := http.DetectContentType(buffer[:n])
+	contentType := http.DetectContentType(
+		buffer[:n],
+	)
 
-	extensions := map[string]string{
-		"image/jpeg": ".jpg",
-		"image/png":  ".png",
-		"image/webp": ".webp",
+	allowedTypes := map[string]bool{
+		"image/jpeg": true,
+		"image/png":  true,
+		"image/webp": true,
 	}
 
-	extension, ok := extensions[contentType]
-	if !ok {
-		return "", fmt.Errorf("unsupported image type: %s", contentType)
+	if !allowedTypes[contentType] {
+		return "", fmt.Errorf(
+			"unsupported image type: %s",
+			contentType,
+		)
 	}
 
-	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		return "", fmt.Errorf("failed to reset image: %w", err)
+	if _, err := file.Seek(
+		0,
+		io.SeekStart,
+	); err != nil {
+		return "", fmt.Errorf(
+			"failed to reset image: %w",
+			err,
+		)
 	}
 
-	if err := os.MkdirAll("uploads/projects", 0755); err != nil {
-		return "", fmt.Errorf("failed to create upload directory: %w", err)
+	if h.CloudinaryService == nil {
+		return "", fmt.Errorf(
+			"Cloudinary service is not configured",
+		)
 	}
 
 	imageID, err := services.GenerateVisitID()
+
 	if err != nil {
-		return "", fmt.Errorf("failed to generate image ID: %w", err)
+		return "", fmt.Errorf(
+			"failed to generate image ID: %w",
+			err,
+		)
 	}
 
-	filename := imageID + extension
+	filename := imageID
 
-	path := filepath.Join(
-		"uploads",
-		"projects",
+	imageURL, err := h.CloudinaryService.UploadImage(
+		r.Context(),
+		file,
 		filename,
+		"portfolio/projects",
 	)
 
-	output, err := os.Create(path)
 	if err != nil {
-		return "", fmt.Errorf("failed to create image: %w", err)
-	}
-	defer output.Close()
-
-	if _, err := io.Copy(output, file); err != nil {
-		return "", fmt.Errorf("failed to save image: %w", err)
+		return "", fmt.Errorf(
+			"failed to upload project to Cloudinary: %w",
+			err,
+		)
 	}
 
-	return "/uploads/projects/" + filename, nil
+	return imageURL, nil
+
 }
 
-func saveResume(r *http.Request) error {
+func saveResume(
+	r *http.Request,
+) error {
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		return fmt.Errorf("failed to parse upload: %w", err)
+		return fmt.Errorf(
+			"failed to parse upload: %w",
+			err,
+		)
 	}
 
 	file, header, err := r.FormFile("resume")
+
 	if err != nil {
 		if err == http.ErrMissingFile {
-			return fmt.Errorf("resume file is required")
+			return fmt.Errorf(
+				"resume file is required",
+			)
 		}
 
-		return fmt.Errorf("failed to read resume: %w", err)
+		return fmt.Errorf(
+			"failed to read resume: %w",
+			err,
+		)
 	}
+
 	defer file.Close()
 
 	if header.Size > 10<<20 {
-		return fmt.Errorf("resume is too large; maximum size is 10MB")
+		return fmt.Errorf(
+			"resume is too large; maximum size is 10MB",
+		)
 	}
 
 	buffer := make([]byte, 512)
 
 	n, err := file.Read(buffer)
+
 	if err != nil && err != io.EOF {
-		return fmt.Errorf("failed to inspect resume: %w", err)
+		return fmt.Errorf(
+			"failed to inspect resume: %w",
+			err,
+		)
 	}
 
-	contentType := http.DetectContentType(buffer[:n])
-
-	if contentType != "application/pdf" {
-		return fmt.Errorf("unsupported resume type: %s; PDF is required", contentType)
-	}
-
-	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		return fmt.Errorf("failed to reset resume: %w", err)
-	}
-
-	if err := os.MkdirAll("uploads/resume", 0755); err != nil {
-		return fmt.Errorf("failed to create resume directory: %w", err)
-	}
-
-	path := filepath.Join(
-		"uploads",
-		"resume",
-		"resume.pdf",
+	contentType := http.DetectContentType(
+		buffer[:n],
 	)
 
-	output, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("failed to create resume: %w", err)
+	if contentType != "application/pdf" {
+		return fmt.Errorf(
+			"unsupported resume type: %s; PDF is required",
+			contentType,
+		)
 	}
+
+	if _, err := file.Seek(
+		0,
+		io.SeekStart,
+	); err != nil {
+		return fmt.Errorf(
+			"failed to reset resume: %w",
+			err,
+		)
+	}
+
+	if err := os.MkdirAll(
+		"uploads/resume",
+		0755,
+	); err != nil {
+		return fmt.Errorf(
+			"failed to create resume directory: %w",
+			err,
+		)
+	}
+
+	const resumePath = "uploads/resume/resume.pdf"
+
+	output, err := os.Create(resumePath)
+
+	if err != nil {
+		return fmt.Errorf(
+			"failed to create resume: %w",
+			err,
+		)
+	}
+
 	defer output.Close()
 
-	if _, err := io.Copy(output, file); err != nil {
-		return fmt.Errorf("failed to save resume: %w", err)
+	if _, err := io.Copy(
+		output,
+		file,
+	); err != nil {
+		return fmt.Errorf(
+			"failed to save resume: %w",
+			err,
+		)
 	}
 
 	return nil
+
 }

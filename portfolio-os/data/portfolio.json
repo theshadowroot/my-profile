@@ -114,12 +114,12 @@
     ],
     "certificates": [
         {
-            "title": "Industrial Cybersecurity Essentials",
+            "title": "Python Essentials",
             "issuer": "Cisco Networking Academy / BDIC",
-            "issue_date": "Apr 2026",
+            "issue_date": "Aug. 2026",
             "credential_id": "cafe4db0-5686-4aea-9166-91263483ac38",
             "description": "Comprehensive training in industrial infrastructure cybersecurity, risk mitigation, and security essentials.",
-            "image": "/uploads/certificates/b6af58e6c1bc431a50926457a2484430.jpg",
+            "image": "https://res.cloudinary.com/cpfzlcy8/image/upload/v1787920428/portfolio/certificates/0088956c43ad6c242751d2afbd72877f.png",
             "verification_url": ""
         },
         {

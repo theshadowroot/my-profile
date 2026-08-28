@@ -51,7 +51,16 @@ func main() {
 
 	// 3. Handlers
 	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService)
-	adminHandler := handlers.NewAdminHandler(renderer, portfolioService)
+	cloudinaryService, err := services.NewCloudinaryService()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	adminHandler := handlers.NewAdminHandler(
+		renderer,
+		portfolioService,
+		cloudinaryService,
+	)
 	homeHandler := handlers.NewHomeHandler(renderer, portfolioService)
 
 	// 4. Mux Routes
