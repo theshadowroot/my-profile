@@ -69,12 +69,12 @@
         {
             "name": "Web App Penetration Testing",
             "category": "Cybersecurity",
-            "proficiency": 85
+            "proficiency": 70
         },
         {
             "name": "Git",
             "category": "Tools",
-            "proficiency": 90
+            "proficiency": 70
         }
     ],
     "services": [
