@@ -1,6 +1,6 @@
 {{ define "content" }}
 
-<link rel="stylesheet" href="/static/css/landing.css">
+<link rel="stylesheet" href="/static/css/landing.css" />
 
 <main class="hero-stage">
   <!-- Crimson Backdrop Ambient Sphere -->
@@ -8,6 +8,7 @@
   <div class="crimson-small-circle-bg"></div>
 
   <!-- Top Navigation -->
+
   <header class="hero-navbar">
     <div class="hero-brand">
       <span class="brand-stripes">
@@ -16,31 +17,49 @@
       <span class="brand-name">{{ .Portfolio.Profile.Name }}</span>
     </div>
 
+    ```
     <nav class="hero-nav">
       <a href="/client#about">ABOUT</a>
       <a href="/client#projects">GALLERY</a>
       <a href="/client#contact">CONTACTS</a>
     </nav>
+    ```
   </header>
 
   <!-- Central Showcase Section -->
+
   <section class="hero-body">
     <!-- Left Column: Copy & Actions -->
     <div class="hero-text-content">
       <span class="hero-subtitle">SYSTEM ARCHITECTURE & SECURITY</span>
-      <h1 class="hero-heading">DEVELOPER</h1>
-      <p class="hero-description">
-        {{ .Portfolio.Profile.Bio }}
-      </p>
 
+      ```
+      <h1 class="hero-heading">DEVELOPER</h1>
+
+      <p class="hero-description">{{ .Portfolio.Profile.Bio }}</p>
+
+      <!-- View Selection -->
       <div class="hero-cta-group">
-        <a href="/developer" class="cta-circle-btn">
-          <span class="arrow-icon">→</span>
-          <span class="btn-text">Developer View</span>
+        <a href="/developer" class="home-view-btn home-view-btn-primary">
+          <span class="home-view-icon">&lt;/&gt;</span>
+
+          <span class="home-view-content">
+            <span class="home-view-label">Developer View</span>
+            <span class="home-view-description">Explore my code</span>
+          </span>
+
+          <span class="home-view-arrow">→</span>
         </a>
 
-        <a href="/client" class="cta-client-link">
-          Client View ↗
+        <a href="/client" class="home-view-btn home-view-btn-secondary">
+          <span class="home-view-icon">◉</span>
+
+          <span class="home-view-content">
+            <span class="home-view-label">Client View</span>
+            <span class="home-view-description">View my portfolio</span>
+          </span>
+
+          <span class="home-view-arrow">↗</span>
         </a>
       </div>
     </div>
@@ -48,21 +67,27 @@
     <!-- Right Column: Hero Figure & Glowing Aura -->
     <div class="hero-art-container">
       <div class="art-glow-orb"></div>
+
       <img
         src="/static/images/profilee.png"
         alt="{{ .Portfolio.Profile.Name }}"
         class="hero-sculpture"
       />
     </div>
+    ```
   </section>
 
   <!-- Bottom Slider / Version Footer -->
+
   <footer class="hero-footer">
     <div class="footer-tracker">
       <span class="num active">01</span>
+
+      ```
       <div class="progress-bar">
         <span class="fill"></span>
       </div>
+
       <span class="num">02</span>
     </div>
 
@@ -70,6 +95,7 @@
       <span class="status-dot"></span>
       <span>{{ .Portfolio.Profile.Availability }}</span>
     </div>
+    ```
   </footer>
 </main>
 

@@ -4,7 +4,8 @@
   <header class="navbar-wrapper">
     <nav class="container nav-container">
       <a href="#hero" class="nav-brand">
-        <span class="brand-bracket">&lt;/&gt;</span> {{ .Portfolio.Profile.Name }}
+        <span class="brand-bracket">&lt;/&gt;</span> {{ .Portfolio.Profile.Name
+        }}
       </a>
       <ul class="nav-menu">
         <li><a href="#hero" class="nav-link active">Home</a></li>
@@ -15,9 +16,17 @@
         <li><a href="#contact" class="nav-link">Contact</a></li>
       </ul>
       <div class="nav-cta">
-        <a href="/developer" class="btn btn-outline btn-sm dev-view-btn">Developer View 💻</a>
+        <a href="/developer" class="btn btn-outline btn-sm dev-view-btn"
+          >Developer View 💻</a
+        >
         {{ if .Portfolio.Contact.Phone }}
-        <a href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }},%20I'd%20like%20to%20hire%20you!" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Hire Me ↗</a>
+        <a
+          href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }},%20I'd%20like%20to%20hire%20you!"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-primary btn-sm"
+          >Hire Me ↗</a
+        >
         {{ else }}
         <a href="#contact" class="btn btn-primary btn-sm">Hire Me ↗</a>
         {{ end }}
@@ -37,10 +46,11 @@
         </h1>
         <p class="hero-bio">{{ .Portfolio.Profile.Bio }}</p>
 
-        <div class="hero-actions">
-          <a href="#projects" class="btn btn-primary">View My Work ↗</a>
-          <a href="#about" class="btn btn-outline">About Me 🪪</a>
-        </div>
+        <a href="#projects" class="btn btn-primary">View My Work ↗</a>
+        <a href="#about" class="btn btn-outline">About Me 🪪</a>
+        <a href="/admin/download-resume" class="btn btn-outline" target="_blank"
+          >Download Resume ↓</a
+        >
 
         {{ if .Portfolio.Skills }}
         <div class="hero-tech-stack">
@@ -88,7 +98,10 @@
         <p>{{ .Portfolio.Profile.Bio }}</p>
         <div class="about-meta">
           <p>📍 <strong>Location:</strong> {{ .Portfolio.Profile.Location }}</p>
-          <p>⚡ <strong>Availability:</strong> {{ .Portfolio.Profile.Availability }}</p>
+          <p>
+            ⚡ <strong>Availability:</strong> {{ .Portfolio.Profile.Availability
+            }}
+          </p>
         </div>
       </div>
 
@@ -125,7 +138,10 @@
             <span class="skill-perc">{{ $skill.Proficiency }}%</span>
           </div>
           <div class="skill-track">
-            <div class="skill-fill" style="width: {{ $skill.Proficiency }}%;"></div>
+            <div
+              class="skill-fill"
+              style="width: {{ $skill.Proficiency }}%;"
+            ></div>
           </div>
         </div>
         {{ end }}
@@ -178,8 +194,7 @@
                 class="link-arrow"
                 >View Project ↗</a
               >
-              {{ end }}
-              {{ if $proj.GitHub }}
+              {{ end }} {{ if $proj.GitHub }}
               <a
                 href="{{ $proj.GitHub }}"
                 target="_blank"
@@ -211,7 +226,10 @@
         {{ range .Portfolio.Certificates }}
         <div class="certificate-card">
           {{ if .Image }}
-          <div class="cert-image-wrapper" onclick="openCertModal('{{ .Image }}', '{{ .Title }}', '{{ .Issuer }}')">
+          <div
+            class="cert-image-wrapper"
+            onclick="openCertModal('{{ .Image }}', '{{ .Title }}', '{{ .Issuer }}')"
+          >
             <img
               src="{{ .Image }}"
               alt="{{ .Title }}"
@@ -248,10 +266,10 @@
               >
                 Verify Credential ↗
               </a>
-              {{ end }}
-
-              {{ if .CredentialID }}
-              <span class="cert-id" title="Credential ID">ID: {{ .CredentialID }}</span>
+              {{ end }} {{ if .CredentialID }}
+              <span class="cert-id" title="Credential ID"
+                >ID: {{ .CredentialID }}</span
+              >
               {{ end }}
             </div>
           </div>
@@ -262,9 +280,15 @@
   </section>
 
   <!-- Certificate Lightbox Modal -->
-  <div id="cert-lightbox-modal" class="cert-modal" onclick="closeCertModal(event)">
+  <div
+    id="cert-lightbox-modal"
+    class="cert-modal"
+    onclick="closeCertModal(event)"
+  >
     <div class="cert-modal-dialog">
-      <button class="cert-modal-close" onclick="closeCertModalDirect()">&times;</button>
+      <button class="cert-modal-close" onclick="closeCertModalDirect()">
+        &times;
+      </button>
       <div class="cert-modal-body">
         <img id="cert-modal-img" src="" alt="Certificate Preview" />
       </div>
@@ -287,8 +311,8 @@
           opportunities to be part of your vision.
         </p>
         {{ if .Portfolio.Contact.Phone }}
-        <a 
-          href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }},%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20get%20in%20touch%20regarding%20a%20project!" 
+        <a
+          href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }},%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20get%20in%20touch%20regarding%20a%20project!"
           class="btn btn-primary"
           target="_blank"
           rel="noopener noreferrer"
@@ -317,12 +341,18 @@
         <span class="footer-label">CONTACT & SOCIAL</span>
         <p class="contact-line">
           ✉
-          <a href="mailto:{{ .Portfolio.Contact.Email }}">{{ .Portfolio.Contact.Email }}</a>
+          <a href="mailto:{{ .Portfolio.Contact.Email }}"
+            >{{ .Portfolio.Contact.Email }}</a
+          >
         </p>
         {{ if .Portfolio.Contact.Phone }}
         <p class="contact-line">
           💬
-          <a href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }}!" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://wa.me/{{ .Portfolio.Contact.Phone }}?text=Hi%20{{ .Portfolio.Profile.Name }}!"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {{ .Portfolio.Contact.Phone }} (WhatsApp)
           </a>
         </p>
@@ -332,7 +362,9 @@
         {{ if .Portfolio.SocialLinks }}
         <div class="social-pills">
           {{ range .Portfolio.SocialLinks }}
-          <a href="{{ .URL }}" target="_blank" rel="noopener" class="soc-icon">{{ .Platform }}</a>
+          <a href="{{ .URL }}" target="_blank" rel="noopener" class="soc-icon"
+            >{{ .Platform }}</a
+          >
           {{ end }}
         </div>
         {{ end }}
