@@ -1,204 +1,177 @@
 {
-    "profile": {
-        "name": "Terna Peter Kpensalen",
-        "title": "Software Developer \u0026 Cybersecurity Enthusiast",
-        "bio": "Results-driven Software Developer and Cybersecurity Enthusiast with hands-on expertise in backend systems development, threat analysis, and web application penetration testing. Proven track record in technical leadership, community mentoring, and training thousands of professionals on digital security protocols.",
-        "location": "Nigeria",
-        "profile_image": "/static/images/profile.png",
-        "availability": "Available for opportunities"
+  "profile": {
+    "name": "Terna Peter Kpensalen",
+    "title": "Software Developer \u0026 Cybersecurity Enthusiast",
+    "bio": "Results-driven Software Developer and Cybersecurity Enthusiast with hands-on expertise in backend systems development, threat analysis, and web application penetration testing. Proven track record in technical leadership, community mentoring, and training thousands of professionals on digital security protocols.",
+    "location": "Nigeria",
+    "profile_image": "/static/images/profile.png",
+    "availability": "Available for opportunities"
+  },
+  "statistics": [
+    {
+      "label": "Trained Civil Servants",
+      "value": "10K+"
     },
-    "statistics": [
-        {
-            "label": "Trained Civil Servants",
-            "value": "10K+"
-        },
-        {
-            "label": "Youths Sensitized",
-            "value": "3K+"
-        },
-        {
-            "label": "Years Experience",
-            "value": "5+"
-        },
-        {
-            "label": "Projects Completed",
-            "value": "10+"
-        }
-    ],
-    "skills": [
-        {
-            "name": "Golang",
-            "category": "Backend",
-            "proficiency": 90
-        },
-        {
-            "name": "Python",
-            "category": "Backend \u0026 Scripting",
-            "proficiency": 70
-        },
-        {
-            "name": "JavaScript",
-            "category": "Frontend / Full-stack",
-            "proficiency": 85
-        },
-        {
-            "name": "React.js",
-            "category": "Frontend",
-            "proficiency": 65
-        },
-        {
-            "name": "HTML/CSS \u0026 Bootstrap",
-            "category": "Frontend",
-            "proficiency": 90
-        },
-        {
-            "name": "REST APIs \u0026 JSON",
-            "category": "Architecture",
-            "proficiency": 75
-        },
-        {
-            "name": "MySQL",
-            "category": "Database",
-            "proficiency": 80
-        },
-        {
-            "name": "Cyber Threat Management",
-            "category": "Cybersecurity",
-            "proficiency": 70
-        },
-        {
-            "name": "Web App Penetration Testing",
-            "category": "Cybersecurity",
-            "proficiency": 70
-        },
-        {
-            "name": "Git",
-            "category": "Tools",
-            "proficiency": 70
-        }
-    ],
-    "services": [
-        {
-            "title": "Backend Engineering",
-            "description": "Building high-performance, resilient backend architectures, RESTful APIs, and microservices with Golang, Python, and MySQL.",
-            "icon": "server"
-        },
-        {
-            "title": "Cybersecurity \u0026 Threat Management",
-            "description": "Systematic web application penetration testing, vulnerability assessments, security protocol training, and defensive remediation.",
-            "icon": "shield"
-        },
-        {
-            "title": "Full-Stack Web Development",
-            "description": "Crafting clean, responsive user interfaces and integrating robust backend services using JavaScript, React.js, and modern CSS.",
-            "icon": "code"
-        }
-    ],
-    "education": [
-        {
-            "institution": "Nodos International School, Ojo, Lagos",
-            "degree": "WASSCE",
-            "field": "WAEC (Lagos State, Nigeria)",
-            "start_year": 0,
-            "end_year": 0,
-            "description": "Secondary education completed with Senior School Certificate Examination."
-        },
-        {
-            "institution": "Saint Francis Nursery \u0026 Primary School, Gboko",
-            "degree": "First School Leaving Certificate",
-            "field": "Primary Education (Lagos State, Nigeria)",
-            "start_year": 0,
-            "end_year": 0,
-            "description": "Primary school education and foundational certification."
-        }
-    ],
-    "certificates": [
-        {
-            "title": "Python Essentials",
-            "issuer": "Cisco Networking Academy / BDIC",
-            "issue_date": "Aug. 2026",
-            "credential_id": "cafe4db0-5686-4aea-9166-91263483ac38",
-            "description": "Comprehensive training in industrial infrastructure cybersecurity, risk mitigation, and security essentials.",
-            "image": "https://res.cloudinary.com/cpfzlcy8/image/upload/v1787920428/portfolio/certificates/0088956c43ad6c242751d2afbd72877f.png",
-            "verification_url": ""
-        },
-        {
-            "title": "Cyber Threat Management",
-            "issuer": "Cisco Networking Academy / BDIC",
-            "issue_date": "Mar 2026",
-            "credential_id": "d5909610-1862-4085-0310-4f6e6d025086",
-            "description": "Threat analysis, defensive operations, threat intelligence, and security incident management.",
-            "image": "/uploads/certificates/ab15e093578b1ee595f47f22069a29a4.png",
-            "verification_url": "https://www.credly.com/badges/2e223234-384a-4ab6-9663-1e697ec19a4b/public_url"
-        },
-        {
-            "title": "JavaScript Essentials",
-            "issuer": "Cisco Networking Academy",
-            "issue_date": "21-August, 2026",
-            "credential_id": "a4b4ccf5-7acd-4715-bd55-341e5f861f8c",
-            "description": "",
-            "image": "/uploads/certificates/3e381fc26f004bc908a1551f435a218c.png",
-            "verification_url": "https://www.credly.com/badges/60ea395e-58bb-498e-a784-19507885e445/public_url"
-        }
-    ],
-    "projects": [
-        {
-            "name": "My Portfolio",
-            "description": "Dynamic real-time price estimation engine and marketplace module constructed with Golang and JavaScript for item listing, community comments, and engagement tracking.",
-            "image": "/images/mypage.png",
-            "url": "https://terna-kpensalen.onrender.com/",
-            "github": "https://github.com/Tena-byte/my-profile",
-            "technologies": [
-                "Golang",
-                "JavaScript",
-                "HTML",
-                "CSS",
-                "Json API"
-            ]
-        },
-        {
-            "name": "",
-            "description": "Advised on system architecture and developed full-stack invoice generation modules for enterprise operations.",
-            "image": "/static/images/project-invoice.jpg",
-            "url": "",
-            "github": "",
-            "technologies": [
-                "HTML",
-                "CSS",
-                "REST API",
-                "MySQL",
-                "JavaScript"
-            ]
-        },
-        {
-            "name": "",
-            "description": "Architected resilient backend services with focused code optimization and security standards during intensive engineering sprints at Learn2Earn_NG.",
-            "image": "/static/images/project-backend.jpg",
-            "url": "",
-            "github": "",
-            "technologies": [
-                "Golang",
-                "REST API",
-                "Security",
-                "Git"
-            ]
-        }
-    ],
-    "contact": {
-        "email": "Ternapeter9@gmail.com",
-        "phone": "+2348101754158",
-        "location": "Nigeria"
+    {
+      "label": "Youths Sensitized",
+      "value": "3K+"
     },
-    "social_links": [
-        {
-            "platform": "GitHub",
-            "url": "https://github.com/Tena-byte",
-            "username": "Tena-byte"
-        },
-        {
-            "platform": "LinkedIn",
-            "url": "https://linkedin.com/in/pete-terna",
-            "username": "pete-terna"
-        }
-    ]
+    {
+      "label": "Years Experience",
+      "value": "5+"
+    },
+    {
+      "label": "Projects Completed",
+      "value": "10+"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Golang",
+      "category": "Backend"
+    },
+    {
+      "name": "Python",
+      "category": "Backend \u0026 Scripting"
+    },
+    {
+      "name": "JavaScript",
+      "category": "Frontend / Full-stack"
+    },
+    {
+      "name": "React.js",
+      "category": "Frontend"
+    },
+    {
+      "name": "HTML/CSS \u0026 Bootstrap",
+      "category": "Frontend"
+    },
+    {
+      "name": "REST APIs \u0026 JSON",
+      "category": "Architecture"
+    },
+    {
+      "name": "MySQL",
+      "category": "Database"
+    },
+    {
+      "name": "Cyber Threat Management",
+      "category": "Cybersecurity"
+    },
+    {
+      "name": "Web App Penetration Testing",
+      "category": "Cybersecurity"
+    },
+    {
+      "name": "Git",
+      "category": "Tools"
+    }
+  ],
+  "services": [
+    {
+      "title": "Backend Engineering",
+      "description": "Building high-performance, resilient backend architectures, RESTful APIs, and microservices with Golang, Python, and MySQL.",
+      "icon": "server"
+    },
+    {
+      "title": "Cybersecurity \u0026 Threat Management",
+      "description": "Systematic web application penetration testing, vulnerability assessments, security protocol training, and defensive remediation.",
+      "icon": "shield"
+    },
+    {
+      "title": "Full-Stack Web Development",
+      "description": "Crafting clean, responsive user interfaces and integrating robust backend services using JavaScript, React.js, and modern CSS.",
+      "icon": "code"
+    }
+  ],
+  "education": [
+    {
+      "institution": "Nodos International School, Ojo, Lagos",
+      "degree": "WASSCE",
+      "field": "WAEC (Lagos State, Nigeria)",
+      "start_year": 0,
+      "end_year": 0,
+      "description": "Secondary education completed with Senior School Certificate Examination."
+    },
+    {
+      "institution": "Saint Francis Nursery \u0026 Primary School, Gboko",
+      "degree": "First School Leaving Certificate",
+      "field": "Primary Education (Lagos State, Nigeria)",
+      "start_year": 0,
+      "end_year": 0,
+      "description": "Primary school education and foundational certification."
+    }
+  ],
+  "certificates": [
+    {
+      "title": "Python Essentials",
+      "issuer": "Cisco Networking Academy / BDIC",
+      "issue_date": "Aug. 2026",
+      "credential_id": "cafe4db0-5686-4aea-9166-91263483ac38",
+      "description": "Comprehensive training in industrial infrastructure cybersecurity, risk mitigation, and security essentials.",
+      "image": "https://res.cloudinary.com/cpfzlcy8/image/upload/v1787920428/portfolio/certificates/0088956c43ad6c242751d2afbd72877f.png",
+      "verification_url": ""
+    },
+    {
+      "title": "Cyber Threat Management",
+      "issuer": "Cisco Networking Academy / BDIC",
+      "issue_date": "Mar 2026",
+      "credential_id": "d5909610-1862-4085-0310-4f6e6d025086",
+      "description": "Threat analysis, defensive operations, threat intelligence, and security incident management.",
+      "image": "/uploads/certificates/ab15e093578b1ee595f47f22069a29a4.png",
+      "verification_url": "https://www.credly.com/badges/2e223234-384a-4ab6-9663-1e697ec19a4b/public_url"
+    },
+    {
+      "title": "JavaScript Essentials",
+      "issuer": "Cisco Networking Academy",
+      "issue_date": "21-August, 2026",
+      "credential_id": "a4b4ccf5-7acd-4715-bd55-341e5f861f8c",
+      "description": "",
+      "image": "/uploads/certificates/3e381fc26f004bc908a1551f435a218c.png",
+      "verification_url": "https://www.credly.com/badges/60ea395e-58bb-498e-a784-19507885e445/public_url"
+    }
+  ],
+  "projects": [
+    {
+      "name": "My Portfolio",
+      "description": "Dynamic real-time price estimation engine and marketplace module constructed with Golang and JavaScript for item listing, community comments, and engagement tracking.",
+      "image": "/images/mypage.png",
+      "url": "https://terna-kpensalen.onrender.com/",
+      "github": "https://github.com/Tena-byte/my-profile",
+      "technologies": ["Golang", "JavaScript", "HTML", "CSS", "Json API"]
+    },
+    {
+      "name": "",
+      "description": "Advised on system architecture and developed full-stack invoice generation modules for enterprise operations.",
+      "image": "/static/images/project-invoice.jpg",
+      "url": "",
+      "github": "",
+      "technologies": ["HTML", "CSS", "REST API", "MySQL", "JavaScript"]
+    },
+    {
+      "name": "",
+      "description": "Architected resilient backend services with focused code optimization and security standards during intensive engineering sprints at Learn2Earn_NG.",
+      "image": "/static/images/project-backend.jpg",
+      "url": "",
+      "github": "",
+      "technologies": ["Golang", "REST API", "Security", "Git"]
+    }
+  ],
+  "contact": {
+    "email": "[Ternapeter9@gmail.com](mailto:Ternapeter9@gmail.com)",
+    "phone": "+2348101754158",
+    "location": "Nigeria"
+  },
+  "social_links": [
+    {
+      "platform": "GitHub",
+      "url": "https://github.com/Tena-byte",
+      "username": "Tena-byte"
+    },
+    {
+      "platform": "LinkedIn",
+      "url": "https://linkedin.com/in/pete-terna",
+      "username": "pete-terna"
+    }
+  ]
 }

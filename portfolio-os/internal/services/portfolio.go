@@ -1,263 +1,464 @@
 package services
 
 import (
-	"encoding/json"
 	"errors"
-	"os"
+	"fmt"
 	"sync"
 
 	"portfolio-os/internal/models"
+
+	"gorm.io/gorm"
 )
 
 type PortfolioService struct {
-	mu        sync.RWMutex
-	filePath  string
-	portfolio models.Portfolio
+	mu sync.RWMutex
+	db *gorm.DB
 }
 
-func NewPortfolioService(filePath string) (*PortfolioService, error) {
-	s := &PortfolioService{
-		filePath: filePath,
+func NewPortfolioService(db *gorm.DB) *PortfolioService {
+	return &PortfolioService{
+		db: db,
 	}
-	if err := s.load(); err != nil {
-		return nil, err
-	}
-	return s, nil
-}
-
-func (s *PortfolioService) load() error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	data, err := os.ReadFile(s.filePath)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(data, &s.portfolio)
-}
-
-func (s *PortfolioService) save() error {
-	data, err := json.MarshalIndent(s.portfolio, "", "    ")
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(s.filePath, data, 0644)
 }
 
 func (s *PortfolioService) GetPortfolio() models.Portfolio {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return s.portfolio
+
+	var portfolio models.Portfolio
+
+	s.db.First(&portfolio.Profile)
+
+	s.db.Order("id ASC").Find(&portfolio.Statistics)
+	s.db.Order("id ASC").Find(&portfolio.Skills)
+	s.db.Order("id ASC").Find(&portfolio.Services)
+	s.db.Order("id ASC").Find(&portfolio.Education)
+	s.db.Order("id ASC").Find(&portfolio.Certificates)
+	s.db.Order("id ASC").Find(&portfolio.Projects)
+	s.db.First(&portfolio.Contact)
+	s.db.Order("id ASC").Find(&portfolio.SocialLinks)
+
+	return portfolio
+
 }
 
 // Profile
-func (s *PortfolioService) UpdateProfile(p models.Profile) error {
+
+func (s *PortfolioService) UpdateProfile(profile models.Profile) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.portfolio.Profile = p
-	return s.save()
+
+	var existing models.Profile
+
+	err := s.db.First(&existing).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return s.db.Create(&profile).Error
+	}
+
+	if err != nil {
+		return err
+	}
+
+	profile.ID = existing.ID
+
+	return s.db.Save(&profile).Error
+
 }
 
 // Certificates
-func (s *PortfolioService) AddCertificate(c models.Certificate) error {
+
+func (s *PortfolioService) AddCertificate(certificate models.Certificate) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.portfolio.Certificates = append(s.portfolio.Certificates, c)
-	return s.save()
+
+	return s.db.Create(&certificate).Error
+
 }
 
-func (s *PortfolioService) UpdateCertificate(idx int, c models.Certificate) error {
+func (s *PortfolioService) UpdateCertificate(index int, certificate models.Certificate) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Certificates) {
-		return errors.New("certificate index out of range")
+
+	id, err := s.getCertificateID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Certificates[idx] = c
-	return s.save()
+
+	certificate.ID = id
+
+	return s.db.Save(&certificate).Error
+
 }
 
-func (s *PortfolioService) DeleteCertificate(idx int) error {
+func (s *PortfolioService) DeleteCertificate(index int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Certificates) {
-		return errors.New("certificate index out of range")
+
+	id, err := s.getCertificateID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Certificates = append(s.portfolio.Certificates[:idx], s.portfolio.Certificates[idx+1:]...)
-	return s.save()
+
+	return s.db.Delete(&models.Certificate{}, id).Error
+
 }
 
 // Skills
+
 func (s *PortfolioService) AddSkill(skill models.Skill) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.portfolio.Skills = append(s.portfolio.Skills, skill)
-	return s.save()
+
+	return s.db.Create(&skill).Error
+
 }
 
-func (s *PortfolioService) UpdateSkill(idx int, skill models.Skill) error {
+func (s *PortfolioService) UpdateSkill(index int, skill models.Skill) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Skills) {
-		return errors.New("skill index out of range")
+
+	id, err := s.getSkillID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Skills[idx] = skill
-	return s.save()
+
+	skill.ID = id
+
+	return s.db.Save(&skill).Error
+
 }
 
-func (s *PortfolioService) DeleteSkill(idx int) error {
+func (s *PortfolioService) DeleteSkill(index int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Skills) {
-		return errors.New("skill index out of range")
+
+	id, err := s.getSkillID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Skills = append(s.portfolio.Skills[:idx], s.portfolio.Skills[idx+1:]...)
-	return s.save()
+
+	return s.db.Delete(&models.Skill{}, id).Error
+
 }
 
 // Statistics
-func (s *PortfolioService) AddStatistic(stat models.Statistic) error {
+
+func (s *PortfolioService) AddStatistic(statistic models.Statistic) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.portfolio.Statistics = append(s.portfolio.Statistics, stat)
-	return s.save()
+
+	return s.db.Create(&statistic).Error
+
 }
 
-func (s *PortfolioService) UpdateStatistic(idx int, stat models.Statistic) error {
+func (s *PortfolioService) UpdateStatistic(index int, statistic models.Statistic) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Statistics) {
-		return errors.New("statistic index out of range")
+
+	id, err := s.getStatisticID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Statistics[idx] = stat
-	return s.save()
+
+	statistic.ID = id
+
+	return s.db.Save(&statistic).Error
+
 }
 
-func (s *PortfolioService) DeleteStatistic(idx int) error {
+func (s *PortfolioService) DeleteStatistic(index int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Statistics) {
-		return errors.New("statistic index out of range")
+
+	id, err := s.getStatisticID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Statistics = append(s.portfolio.Statistics[:idx], s.portfolio.Statistics[idx+1:]...)
-	return s.save()
+
+	return s.db.Delete(&models.Statistic{}, id).Error
+
 }
 
 // Services
-func (s *PortfolioService) AddService(srv models.ServiceOffering) error {
+
+func (s *PortfolioService) AddService(service models.ServiceOffering) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.portfolio.Services = append(s.portfolio.Services, srv)
-	return s.save()
+
+	return s.db.Create(&service).Error
+
 }
 
-func (s *PortfolioService) UpdateService(idx int, srv models.ServiceOffering) error {
+func (s *PortfolioService) UpdateService(index int, service models.ServiceOffering) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Services) {
-		return errors.New("service index out of range")
+
+	id, err := s.getServiceID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Services[idx] = srv
-	return s.save()
+
+	service.ID = id
+
+	return s.db.Save(&service).Error
+
 }
 
-func (s *PortfolioService) DeleteService(idx int) error {
+func (s *PortfolioService) DeleteService(index int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Services) {
-		return errors.New("service index out of range")
+
+	id, err := s.getServiceID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Services = append(s.portfolio.Services[:idx], s.portfolio.Services[idx+1:]...)
-	return s.save()
+
+	return s.db.Delete(&models.ServiceOffering{}, id).Error
+
 }
 
 // Education
-func (s *PortfolioService) AddEducation(edu models.EducationEntry) error {
+
+func (s *PortfolioService) AddEducation(education models.EducationEntry) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.portfolio.Education = append(s.portfolio.Education, edu)
-	return s.save()
+
+	return s.db.Create(&education).Error
+
 }
 
-func (s *PortfolioService) UpdateEducation(idx int, edu models.EducationEntry) error {
+func (s *PortfolioService) UpdateEducation(index int, education models.EducationEntry) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Education) {
-		return errors.New("education index out of range")
+
+	id, err := s.getEducationID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Education[idx] = edu
-	return s.save()
+
+	education.ID = id
+
+	return s.db.Save(&education).Error
+
 }
 
-func (s *PortfolioService) DeleteEducation(idx int) error {
+func (s *PortfolioService) DeleteEducation(index int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Education) {
-		return errors.New("education index out of range")
+
+	id, err := s.getEducationID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Education = append(s.portfolio.Education[:idx], s.portfolio.Education[idx+1:]...)
-	return s.save()
+
+	return s.db.Delete(&models.EducationEntry{}, id).Error
+
 }
 
 // Projects
-func (s *PortfolioService) AddProject(proj models.Project) error {
+
+func (s *PortfolioService) AddProject(project models.Project) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.portfolio.Projects = append(s.portfolio.Projects, proj)
-	return s.save()
+
+	return s.db.Create(&project).Error
+
 }
 
-func (s *PortfolioService) UpdateProject(idx int, proj models.Project) error {
+func (s *PortfolioService) UpdateProject(index int, project models.Project) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Projects) {
-		return errors.New("project index out of range")
+
+	id, err := s.getProjectID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Projects[idx] = proj
-	return s.save()
+
+	project.ID = id
+
+	return s.db.Save(&project).Error
+
 }
 
-func (s *PortfolioService) DeleteProject(idx int) error {
+func (s *PortfolioService) DeleteProject(index int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.Projects) {
-		return errors.New("project index out of range")
+
+	id, err := s.getProjectID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.Projects = append(s.portfolio.Projects[:idx], s.portfolio.Projects[idx+1:]...)
-	return s.save()
+
+	return s.db.Delete(&models.Project{}, id).Error
+
 }
 
-// Contact & Social
+// Contact
+
 func (s *PortfolioService) UpdateContact(contact models.ContactInfo) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.portfolio.Contact = contact
-	return s.save()
+
+	var existing models.ContactInfo
+
+	err := s.db.First(&existing).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return s.db.Create(&contact).Error
+	}
+
+	if err != nil {
+		return err
+	}
+
+	contact.ID = existing.ID
+
+	return s.db.Save(&contact).Error
+
 }
+
+// Social Links
 
 func (s *PortfolioService) AddSocialLink(link models.SocialLink) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.portfolio.SocialLinks = append(s.portfolio.SocialLinks, link)
-	return s.save()
+
+	return s.db.Create(&link).Error
+
 }
 
-func (s *PortfolioService) UpdateSocialLink(idx int, link models.SocialLink) error {
+func (s *PortfolioService) UpdateSocialLink(index int, link models.SocialLink) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.SocialLinks) {
-		return errors.New("social link index out of range")
+
+	id, err := s.getSocialLinkID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.SocialLinks[idx] = link
-	return s.save()
+
+	link.ID = id
+
+	return s.db.Save(&link).Error
+
 }
 
-func (s *PortfolioService) DeleteSocialLink(idx int) error {
+func (s *PortfolioService) DeleteSocialLink(index int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if idx < 0 || idx >= len(s.portfolio.SocialLinks) {
-		return errors.New("social link index out of range")
+
+	id, err := s.getSocialLinkID(index)
+	if err != nil {
+		return err
 	}
-	s.portfolio.SocialLinks = append(s.portfolio.SocialLinks[:idx], s.portfolio.SocialLinks[idx+1:]...)
-	return s.save()
+
+	return s.db.Delete(&models.SocialLink{}, id).Error
+
+}
+
+// ID lookup helpers
+
+func (s *PortfolioService) getCertificateID(index int) (uint, error) {
+	var records []models.Certificate
+
+	if err := s.db.Order("id ASC").Find(&records).Error; err != nil {
+		return 0, err
+	}
+
+	if index < 0 || index >= len(records) {
+		return 0, fmt.Errorf("certificate index out of range")
+	}
+
+	return records[index].ID, nil
+
+}
+
+func (s *PortfolioService) getSkillID(index int) (uint, error) {
+	var records []models.Skill
+
+	if err := s.db.Order("id ASC").Find(&records).Error; err != nil {
+		return 0, err
+	}
+
+	if index < 0 || index >= len(records) {
+		return 0, fmt.Errorf("skill index out of range")
+	}
+
+	return records[index].ID, nil
+
+}
+
+func (s *PortfolioService) getStatisticID(index int) (uint, error) {
+	var records []models.Statistic
+
+	if err := s.db.Order("id ASC").Find(&records).Error; err != nil {
+		return 0, err
+	}
+
+	if index < 0 || index >= len(records) {
+		return 0, fmt.Errorf("statistic index out of range")
+	}
+
+	return records[index].ID, nil
+
+}
+
+func (s *PortfolioService) getServiceID(index int) (uint, error) {
+	var records []models.ServiceOffering
+
+	if err := s.db.Order("id ASC").Find(&records).Error; err != nil {
+		return 0, err
+	}
+
+	if index < 0 || index >= len(records) {
+		return 0, fmt.Errorf("service index out of range")
+	}
+
+	return records[index].ID, nil
+
+}
+
+func (s *PortfolioService) getEducationID(index int) (uint, error) {
+	var records []models.EducationEntry
+
+	if err := s.db.Order("id ASC").Find(&records).Error; err != nil {
+		return 0, err
+	}
+
+	if index < 0 || index >= len(records) {
+		return 0, fmt.Errorf("education index out of range")
+	}
+
+	return records[index].ID, nil
+
+}
+
+func (s *PortfolioService) getProjectID(index int) (uint, error) {
+	var records []models.Project
+
+	if err := s.db.Order("id ASC").Find(&records).Error; err != nil {
+		return 0, err
+	}
+
+	if index < 0 || index >= len(records) {
+		return 0, fmt.Errorf("project index out of range")
+	}
+
+	return records[index].ID, nil
+
+}
+
+func (s *PortfolioService) getSocialLinkID(index int) (uint, error) {
+	var records []models.SocialLink
+
+	if err := s.db.Order("id ASC").Find(&records).Error; err != nil {
+		return 0, err
+	}
+
+	if index < 0 || index >= len(records) {
+		return 0, fmt.Errorf("social link index out of range")
+	}
+
+	return records[index].ID, nil
+
 }

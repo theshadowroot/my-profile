@@ -1114,7 +1114,6 @@ func (h *AdminHandler) DeleteSocialLink(
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 
 }
-
 func parseSkillForm(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -1130,23 +1129,9 @@ func parseSkillForm(
 		return models.Skill{}, false
 	}
 
-	proficiency, err := strconv.Atoi(
-		r.FormValue("proficiency"),
-	)
-
-	if err != nil || proficiency < 0 || proficiency > 100 {
-		http.Error(
-			w,
-			"proficiency must be a number between 0 and 100",
-			http.StatusBadRequest,
-		)
-		return models.Skill{}, false
-	}
-
 	return models.Skill{
-		Name:        name,
-		Category:    r.FormValue("category"),
-		Proficiency: proficiency,
+		Name:     name,
+		Category: r.FormValue("category"),
 	}, true
 
 }

@@ -1,79 +1,153 @@
 package models
 
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
+)
+
+type StringArray []string
+
+func (s StringArray) Value() (driver.Value, error) {
+	if s == nil {
+		return "[]", nil
+	}
+
+	data, err := json.Marshal(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return string(data), nil
+
+}
+
+func (s *StringArray) Scan(value interface{}) error {
+	if value == nil {
+		*s = []string{}
+		return nil
+	}
+
+	var data []byte
+
+	switch v := value.(type) {
+	case []byte:
+		data = v
+	case string:
+		data = []byte(v)
+	default:
+		return fmt.Errorf("unsupported StringArray value type: %T", value)
+	}
+
+	if len(data) == 0 {
+		*s = []string{}
+		return nil
+	}
+
+	return json.Unmarshal(data, s)
+
+}
+
 type Portfolio struct {
-	Profile      Profile           `json:"profile"`
-	Statistics   []Statistic       `json:"statistics"`
-	Skills       []Skill           `json:"skills"`
-	Services     []ServiceOffering `json:"services"`
-	Education    []EducationEntry  `json:"education"`
-	Certificates []Certificate     `json:"certificates"`
-	Projects     []Project         `json:"projects"`
-	Contact      ContactInfo       `json:"contact"`
-	SocialLinks  []SocialLink      `json:"social_links"`
+	Profile      Profile
+	Statistics   []Statistic
+	Skills       []Skill
+	Services     []ServiceOffering
+	Education    []EducationEntry
+	Certificates []Certificate
+	Projects     []Project
+	Contact      ContactInfo
+	SocialLinks  []SocialLink
 }
 
 type Profile struct {
-	Name         string `json:"name"`
-	Title        string `json:"title"`
-	Bio          string `json:"bio"`
-	Location     string `json:"location"`
-	ProfileImage string `json:"profile_image"`
-	Availability string `json:"availability"`
+	ID           uint   `gorm:"primaryKey"`
+	Name         string `gorm:"not null"`
+	Title        string
+	Bio          string `gorm:"type:text"`
+	Location     string
+	ProfileImage string
+	Availability string
+	CreatedAt    int64
+	UpdatedAt    int64
 }
 
 type Statistic struct {
-	Label string `json:"label"`
-	Value string `json:"value"`
+	ID        uint   `gorm:"primaryKey"`
+	Label     string `gorm:"not null"`
+	Value     string `gorm:"not null"`
+	CreatedAt int64
+	UpdatedAt int64
 }
 
 type Skill struct {
-	Name        string `json:"name"`
-	Category    string `json:"category"`
-	Proficiency int    `json:"proficiency"`
+	ID        uint   `gorm:"primaryKey"`
+	Name      string `gorm:"not null"`
+	Category  string
+	CreatedAt int64
+	UpdatedAt int64
 }
 
 type ServiceOffering struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Icon        string `json:"icon"`
+	ID          uint   `gorm:"primaryKey"`
+	Title       string `gorm:"not null"`
+	Description string `gorm:"type:text"`
+	Icon        string
+	CreatedAt   int64
+	UpdatedAt   int64
 }
 
 type EducationEntry struct {
-	Institution string `json:"institution"`
-	Degree      string `json:"degree"`
-	Field       string `json:"field"`
-	StartYear   int    `json:"start_year"`
-	EndYear     int    `json:"end_year"`
-	Description string `json:"description"`
+	ID          uint   `gorm:"primaryKey"`
+	Institution string `gorm:"not null"`
+	Degree      string
+	Field       string
+	StartYear   int
+	EndYear     int
+	Description string `gorm:"type:text"`
+	CreatedAt   int64
+	UpdatedAt   int64
 }
 
 type Certificate struct {
-	Title           string `json:"title"`
-	Issuer          string `json:"issuer"`
-	IssueDate       string `json:"issue_date"`
-	CredentialID    string `json:"credential_id"`
-	Description     string `json:"description"`
-	Image           string `json:"image"`
-	VerificationURL string `json:"verification_url"`
+	ID              uint   `gorm:"primaryKey"`
+	Title           string `gorm:"not null"`
+	Issuer          string
+	IssueDate       string
+	CredentialID    string
+	Description     string `gorm:"type:text"`
+	Image           string
+	VerificationURL string
+	CreatedAt       int64
+	UpdatedAt       int64
 }
 
 type Project struct {
-	Name         string   `json:"name"`
-	Description  string   `json:"description"`
-	Image        string   `json:"image"`
-	URL          string   `json:"url"`
-	GitHub       string   `json:"github"`
-	Technologies []string `json:"technologies"`
+	ID           uint `gorm:"primaryKey"`
+	Name         string
+	Description  string `gorm:"type:text"`
+	Image        string
+	URL          string
+	GitHub       string
+	Technologies StringArray `gorm:"type:jsonb"`
+	CreatedAt    int64
+	UpdatedAt    int64
 }
 
 type ContactInfo struct {
-	Email    string `json:"email"`
-	Phone    string `json:"phone"`
-	Location string `json:"location"`
+	ID        uint `gorm:"primaryKey"`
+	Email     string
+	Phone     string
+	Location  string
+	CreatedAt int64
+	UpdatedAt int64
 }
 
 type SocialLink struct {
-	Platform string `json:"platform"`
-	URL      string `json:"url"`
-	Username string `json:"username"`
+	ID        uint   `gorm:"primaryKey"`
+	Platform  string `gorm:"not null"`
+	URL       string
+	Username  string
+	CreatedAt int64
+	UpdatedAt int64
 }
